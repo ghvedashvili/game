@@ -8,9 +8,9 @@
 <style>
   html,body{margin:0;height:100%;background:#050a16;overflow:hidden;font-family:'Noto Sans Georgian',system-ui,sans-serif;color:#fff;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
   body{display:flex;align-items:center;justify-content:center}
-  #wrap{position:relative;aspect-ratio:420/720;width:min(100vw,calc(100vh*0.5833));width:min(100vw,calc(100dvh*0.5833));overflow:hidden;background:#070d1f}
+  #wrap{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#070d1f}
   canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
-  #hud{position:absolute;top:8px;left:8px;right:8px;display:flex;align-items:center;justify-content:space-between;gap:6px;background:rgba(5,12,28,.72);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:7px 10px;backdrop-filter:blur(4px);pointer-events:none}
+  #hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 16px));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:6px;background:rgba(5,12,28,.72);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:7px 10px;backdrop-filter:blur(4px);pointer-events:none}
   .team{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
   .team.r{align-items:flex-end}
   .nm{font-size:12px;font-weight:700;opacity:.75;display:flex;align-items:center;gap:5px}
@@ -24,7 +24,7 @@
   .score{font-size:26px;font-weight:900;letter-spacing:1px;line-height:1}
   .sd{font-size:9px;color:#facc15;font-weight:700;white-space:nowrap;margin-top:2px;min-height:11px}
   #hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:700;white-space:nowrap;pointer-events:none;transition:opacity .25s}
-  #mute{position:absolute;right:10px;bottom:72px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;font-size:17px;cursor:pointer}
+  #mute{position:absolute;right:max(10px,calc(50% - 280px));bottom:72px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;font-size:17px;cursor:pointer}
   #banner{position:absolute;left:0;right:0;top:19%;text-align:center;font-size:46px;font-weight:900;pointer-events:none;opacity:0;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6)}
   #banner.show{animation:pop 2.1s ease-out forwards}
   @keyframes pop{0%{opacity:0;transform:scale(.4)}12%{opacity:1;transform:scale(1.12)}20%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1)}}
@@ -41,7 +41,7 @@
   .tbtn{font-family:inherit;display:flex;align-items:center;gap:8px;padding:10px;border-radius:12px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.07);color:#fff;font-size:14px;font-weight:700;cursor:pointer;text-align:left}
   .tbtn:active{transform:scale(.97)}.tbtn:disabled{opacity:.45}
   .jer{width:22px;height:22px;border-radius:6px;flex:none;box-shadow:inset 0 -7px 0 var(--c2),0 0 0 1px rgba(255,255,255,.25)}
-  .tree{display:flex;gap:8px;overflow-x:auto;width:100%;padding:4px 2px 150px;scroll-behavior:smooth}
+  .tree{display:flex;gap:8px;overflow-x:auto;width:100%;max-width:max-content;margin:0 auto;box-sizing:border-box;padding:4px 2px 150px;scroll-behavior:smooth}
   .col{display:flex;flex-direction:column;min-width:124px;flex:none}
   .colh{font-size:11px;font-weight:900;opacity:.7;text-align:center;margin-bottom:6px;white-space:nowrap}
   .colb{display:flex;flex-direction:column;justify-content:space-around;flex:1;gap:6px;min-height:430px}
@@ -55,7 +55,7 @@
   .row{display:flex;gap:8px;flex-wrap:wrap;justify-content:center}
   .btn2{font-family:inherit;font-size:14px;font-weight:800;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 16px;cursor:pointer}
   .btn.sm{font-size:15px;padding:11px 24px}
-  #skip{position:absolute;left:10px;bottom:72px;display:none}
+  #skip{position:absolute;left:max(10px,calc(50% - 280px));bottom:72px;display:none}
   .medh{font-weight:900;font-size:14px;margin:6px 0}.medt{border-collapse:collapse;font-size:13px;margin:0 auto}.medt td,.medt th{padding:4px 8px;text-align:center}.medt td:nth-child(2){text-align:left;white-space:nowrap}.medt .j{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px;box-shadow:inset 0 -3px 0 var(--c2)}.medt tr+tr td{border-top:1px solid rgba(255,255,255,.08)}
   .mode{opacity:.55}.mode.on{opacity:1;background:rgba(250,204,21,.25);border-color:#facc15}
   .ov p{font-size:14px;line-height:1.55;opacity:.85;max-width:300px;margin:8px 0 18px}
@@ -63,6 +63,14 @@
   .btn{font-family:inherit;font-size:18px;font-weight:900;color:#1a1300;background:linear-gradient(#fde047,#f59e0b);border:none;border-radius:999px;padding:14px 38px;cursor:pointer;box-shadow:0 6px 0 #a16207,0 10px 24px rgba(0,0,0,.4)}
   .btn:disabled{filter:grayscale(1);opacity:.6}
   .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #a16207}
+  .hb{font-family:inherit;width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.08);color:#fff;cursor:pointer;text-align:left}
+  .hb:active{transform:scale(.98)}.hb .ic{font-size:30px}.hb b{display:block;font-size:17px}.hb small{opacity:.65;font-size:12px}
+  .hb.main{background:linear-gradient(135deg,rgba(250,204,21,.28),rgba(245,158,11,.12));border-color:rgba(250,204,21,.55)}
+  .card{width:100%;max-width:340px;display:flex;flex-direction:column;gap:10px}
+  .codein{font-family:inherit;font-size:24px;font-weight:900;letter-spacing:6px;width:150px;text-align:center;padding:9px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff}
+  .plist{width:100%;max-width:320px;text-align:left;font-size:14px}.plist div{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px}
+  .plist .j{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 -4px 0 var(--c2)}
+  .tbtn.taken{opacity:.35;pointer-events:none}
   .stats{font-size:12px;opacity:.6;margin-top:18px;min-height:14px}
 </style>
 <script src="firebase-config.js"></script>
@@ -83,15 +91,48 @@
   <button id="mute" aria-label="ხმა">🔊</button>
   <div id="fade"></div>
   <button class="btn2" id="skip">⏭ გამოტოვება</button>
-  <div class="ov top" id="pick">
-    <div class="big" style="font-size:44px">🏆</div>
-    <h2>საქართველოს ჩემპიონატი</h2>
-    <div class="row" style="margin:2px 0 10px"><button class="btn2 mode on" id="mChamp">🏆 ჩემპიონატი</button><button class="btn2 mode" id="mFriend">👥 მეგობართან</button></div>
-    <button class="btn2" id="medBtn" style="margin-bottom:10px">🏅 რეგიონების ტიტულები</button>
-    <div class="sub" id="pickSub">იტვირთება…</div>
+  <div class="ov top" id="home" style="justify-content:center">
+    <div id="accBar" style="display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);width:min(340px,calc(100% - 24px));align-items:center;justify-content:space-between;gap:8px;font-size:13px"><span id="accName">👤 სტუმარი</span><button class="btn2" id="accBtn" style="padding:7px 12px;font-size:12px">შესვლა / რეგისტრაცია</button></div>
+    <div class="big" style="font-size:52px">🏆</div>
+    <h1 style="font-size:28px">საქართველოს<br>ჩემპიონატი</h1>
+    <div class="sub">პენალტების სერია · 16 რეგიონი</div>
+    <div class="card">
+      <button class="hb main" id="hResume" style="display:none;border-color:#4ade80;background:rgba(34,197,94,.2)"><span class="ic">▶️</span><span><b>გააგრძელე ტურნირი</b><small id="hResumeTxt"></small></span></button>
+      <button class="hb main" id="hChamp"><span class="ic">🏆</span><span><b>ჩემპიონატი</b><small>16 რეგიონი · კომპიუტერის წინააღმდეგ</small></span></button>
+      <button class="hb online" id="hFriend"><span class="ic">👥</span><span><b>მეგობართან</b><small>1 × 1 · კოდით</small></span></button>
+      <button class="hb online" id="hTour"><span class="ic">🏟️</span><span><b>ონლაინ ტურნირი</b><small>4, 8 ან 16 მოთამაშე · ამხანაგური, ტიტულები არ ითვლება</small></span></button>
+      <button class="hb" id="medBtn"><span class="ic">🏅</span><span><b>რეგიონების ტიტულები</b><small>საქართველოს ჩემპიონატის მედლები</small></span></button>
+    </div>
+    <div class="sub" id="homeMsg" style="margin-top:10px">იტვირთება…</div>
+    <div class="stats" id="stats" style="opacity:1;margin-top:4px"></div>
+    <div style="font-size:10px;opacity:.45;padding:10px 0 14px">3D მოდელი: „Football player“ — tomleeosborn, Sketchfab</div>
+  </div>
+  <div class="ov top hide" id="pick">
+    <div style="width:100%;max-width:380px;display:flex;justify-content:flex-start"><button class="btn2" id="pickBack">← უკან</button></div>
+    <h2 id="pickTitle">ჩემპიონატი</h2>
+    <div class="sub" id="pickSub">აირჩიე შენი რეგიონი</div>
     <div class="grid" id="teamGrid"></div>
-    <div class="stats" id="stats" style="opacity:1;padding-bottom:10px"></div>
-    <div style="font-size:10px;opacity:.45;padding-bottom:14px">3D მოდელი: „Football player“ — tomleeosborn, Sketchfab</div>
+  </div>
+  <div class="ov top hide" id="tourOv" style="justify-content:center">
+    <div class="big" style="font-size:44px">🏟️</div>
+    <h2>ონლაინ ტურნირი</h2>
+    <div id="tStart" class="card" style="align-items:center">
+      <div class="sub" style="margin:4px 0">რამდენი გუნდი?</div>
+      <div class="row" id="tSizes"><button class="btn2 mode" data-n="4">4</button><button class="btn2 mode on" data-n="8">8</button><button class="btn2 mode" data-n="16">16</button></div>
+      <button class="btn sm" id="tCreate">➕ ტურნირის შექმნა</button>
+      <div style="opacity:.6;font-size:12px;margin-top:8px">ან შეიყვანე ტურნირის კოდი</div>
+      <div class="row"><input id="tCode" class="codein" inputmode="numeric" maxlength="5" placeholder="00000"><button class="btn2" id="tJoin">შესვლა</button></div>
+    </div>
+    <div id="tLobby" style="display:none;flex-direction:column;align-items:center;gap:8px;width:100%">
+      <div style="font-size:13px;opacity:.8">ტურნირის კოდი — გაუზიარე მეგობრებს</div>
+      <div id="tBig" style="font-size:46px;font-weight:900;letter-spacing:8px;color:#facc15">-----</div>
+      <div class="sub" id="tCount" style="margin:0"></div>
+      <div class="plist" id="tPlayers"></div>
+      <div class="sub" id="tNote" style="margin:6px 0 0"></div>
+      <button class="btn sm" id="tGo" style="display:none">▶ დაწყება</button>
+    </div>
+    <div class="sub" id="tMsg" style="margin-top:12px;color:#fca5a5;min-height:18px"></div>
+    <button class="btn2" id="tBack">← მთავარი</button>
   </div>
   <div class="ov hide" id="medModal" style="z-index:5;background:rgba(0,0,0,.82)">
     <div style="background:#0f1a33;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:16px 12px;width:100%;max-width:360px;max-height:88%;display:flex;flex-direction:column;position:relative">
@@ -102,6 +143,18 @@
       <div id="medNote" style="font-size:11px;opacity:.55;margin-top:8px"></div>
     </div>
   </div>
+  <div class="ov hide" id="accModal" style="z-index:6;background:rgba(0,0,0,.85)">
+    <div style="background:#0f1a33;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:18px 16px;width:100%;max-width:330px;display:flex;flex-direction:column;gap:10px;position:relative">
+      <button class="btn2" id="aClose" style="position:absolute;right:10px;top:10px;padding:6px 11px">✕</button>
+      <h2 style="margin:0">👤 ანგარიში</h2>
+      <div style="font-size:12px;opacity:.7">არასავალდებულოა. ანგარიშით შენი მედლები ნებისმიერ ტელეფონსა და ბრაუზერში გაგყვება.</div>
+      <input id="aNick" class="codein" style="width:auto;letter-spacing:0;font-size:17px" placeholder="ნიკი" autocomplete="username" maxlength="16">
+      <input id="aPw" class="codein" style="width:auto;letter-spacing:0;font-size:17px" type="password" placeholder="პაროლი (მინ. 6)" autocomplete="current-password">
+      <div class="row"><button class="btn sm" id="aLogin">შესვლა</button><button class="btn2" id="aReg">რეგისტრაცია</button></div>
+      <div id="aMsg" style="font-size:13px;color:#fca5a5;min-height:18px"></div>
+      <div style="font-size:11px;opacity:.55">რეგისტრაციისას ამ ბრაუზერში მოგებული მედლები ანგარიშზე გადავა. პაროლის აღდგენა ვერ ხერხდება — დაიმახსოვრე.</div>
+    </div>
+  </div>
   <div class="ov hide" id="friend">
     <div class="big" style="font-size:44px">👥</div>
     <h2>მეგობართან თამაში</h2>
@@ -109,7 +162,7 @@
     <div id="fMain" style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%;max-width:300px">
       <button class="btn sm" id="fCreate">➕ მატჩის შექმნა</button>
       <div style="opacity:.6;font-size:12px">ან შეიყვანე მეგობრის კოდი</div>
-      <div class="row"><input id="fCode" inputmode="numeric" maxlength="4" placeholder="0000" style="font-family:inherit;font-size:24px;font-weight:900;letter-spacing:6px;width:130px;text-align:center;padding:9px;border-radius:12px;border:1px solid rgba(255,255,255,.3);background:rgba(255,255,255,.08);color:#fff"><button class="btn2" id="fJoin">შესვლა</button></div>
+      <div class="row"><input id="fCode" class="codein" inputmode="numeric" maxlength="4" placeholder="0000"><button class="btn2" id="fJoin">შესვლა</button></div>
     </div>
     <div id="fWait" style="display:none;flex-direction:column;align-items:center;gap:6px">
       <div style="font-size:13px;opacity:.8">გაუზიარე ეს კოდი მეგობარს</div>
@@ -586,6 +639,15 @@ function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)
 function nbuf(a){if(!NB){NB=a.createBuffer(1,a.sampleRate*2.5,a.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}return NB;}
 function tone(f,dur,type,vol,f2){const a=ac();if(!a)return;const t=a.currentTime,o=a.createOscillator(),g=a.createGain();o.type=type;o.frequency.setValueAtTime(f,t);if(f2)o.frequency.exponentialRampToValueAtTime(f2,t+dur);g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+dur);o.connect(g).connect(master);o.start(t);o.stop(t+dur+.02);}
 function noise(dur,vol,freq,q,att){const a=ac();if(!a)return;const t=a.currentTime,s=a.createBufferSource();s.buffer=nbuf(a);const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=freq;f.Q.value=q;const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+att);g.gain.exponentialRampToValueAtTime(.0001,t+dur);s.connect(f).connect(g).connect(master);s.start(t);s.stop(t+dur+.05);}
+let unlocked=false;
+function unlockAudio(){
+  try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+  const a=ac();if(!a)return;if(a.state!=='running')a.resume();
+  if(!unlocked){unlocked=true;try{const b=a.createBuffer(1,1,22050),s=a.createBufferSource();s.buffer=b;s.connect(a.destination);s.start(0);}catch(e){}
+    try{const el=new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAESsAACJWAAACABAAZGF0YQAAAAA=');el.setAttribute('playsinline','');el.play().catch(()=>{});}catch(e){}
+    ambience();}
+}
+['pointerdown','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlockAudio,{capture:true,passive:true}));
 function ambience(){const a=ac();if(!a||amb)return;const s=a.createBufferSource();s.buffer=nbuf(a);s.loop=true;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=700;f.Q.value=.5;const g=a.createGain();g.gain.value=.06;s.connect(f).connect(g).connect(master);s.start();amb=s;}
 const sfx={
   kick(){tone(150,.18,'sine',.8,45);noise(.07,.4,1600,1,.002);},
@@ -637,11 +699,12 @@ function matchKits(A,B){
   return{ka,kb,ga,gb};
 }
 let TOUR=null,human=null,cur=null,swapped=false,aimT=0;
-function loadCup(){try{return JSON.parse(localStorage.getItem('pen_cup'))||{titles:0,played:0};}catch(e){return{titles:0,played:0};}}
-function saveCup(c){try{localStorage.setItem('pen_cup',JSON.stringify(c));}catch(e){}}
+let ACC={reg:false,nick:'',medals:null,played:0};
+function loadCup(){if(ACC.reg)return{played:ACC.played||0};try{return JSON.parse(localStorage.getItem('pen_cup'))||{titles:0,played:0};}catch(e){return{titles:0,played:0};}}
+function saveCup(c){if(ACC.reg){ACC.played=c.played;getNet().then(n=>n.set(`users/${n.uid()}/played`,c.played)).catch(()=>{});return;}try{localStorage.setItem('pen_cup',JSON.stringify(c));}catch(e){}}
 // medals are stored ONLY for the region the player controlled
-function loadMedals(){try{return JSON.parse(localStorage.getItem('pen_medals'))||{};}catch(e){return{};}}
-function addMedal(team,kind){const m=loadMedals();m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]++;try{localStorage.setItem('pen_medals',JSON.stringify(m));}catch(e){}}
+function loadMedals(){if(ACC.reg)return ACC.medals||{};try{return JSON.parse(localStorage.getItem('pen_medals'))||{};}catch(e){return{};}}
+function addMedal(team,kind){if(ACC.reg){const m=ACC.medals=ACC.medals||{};m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]=(m[team][kind]||0)+1;getNet().then(n=>n.tx(`users/${n.uid()}/medals/${team}/${kind}`,v=>(v||0)+1)).catch(()=>{});return;}const m=loadMedals();m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]++;try{localStorage.setItem('pen_medals',JSON.stringify(m));}catch(e){}}
 const MED={g:'🥇',s:'🥈',b:'🥉'};
 function medalStr(x){return x?['g','s','b'].filter(k=>x[k]).map(k=>MED[k]+(x[k]>1?x[k]:'')).join(' '):'';}
 function showStats(){const c=loadCup();$('stats').innerHTML=c.played?`<div style="opacity:.55">ნათამაშები ტურნირები: ${c.played}</div>`:'';$('stats2').textContent='';}
@@ -658,28 +721,89 @@ async function openMedals(tab){
   medTab=tab||medTab;$('medModal').classList.remove('hide');
   $('tAll').classList.toggle('on',medTab==='all');$('tMine').classList.toggle('on',medTab==='mine');
   const box=$('medBody');
-  if(medTab==='mine'){box.innerHTML=medalTable(loadMedals(),'შენ ჯერ მედალი არ მოგიგია — მოიგე ტურნირი!');$('medNote').textContent='შენი მედლები ამ მოწყობილობაზე.';return;}
-  box.innerHTML='<div style="opacity:.7;padding:20px">იტვირთება…</div>';$('medNote').textContent='ყველა მოთამაშის მიერ მოპოვებული მედლები.';
-  try{const n=await getNet();const m=await n.getMedals();if(medTab==='all')box.innerHTML=medalTable(m,'ჯერ არავის მოუგია მედალი — იყავი პირველი!');}
-  catch(e){if(medTab==='all')box.innerHTML=`<div style="opacity:.75;padding:16px;font-size:13px">საერთო ცხრილი ხელმისაწვდომია მხოლოდ ონლაინ ვერსიაში (ghvedashvili.github.io/game).</div>`;}
+  if(medTab==='mine'){box.innerHTML=medalTable(loadMedals(),'შენ ჯერ მედალი არ მოგიგია — მოიგე ტურნირი!');$('medNote').textContent='შენი მედლები საქართველოს ჩემპიონატში, ამ მოწყობილობაზე.';return;}
+  box.innerHTML='<div style="opacity:.7;padding:20px">იტვირთება…</div>';$('medNote').textContent='ყველა მოთამაშის მედლები საქართველოს ჩემპიონატში (ონლაინ ტურნირები არ ითვლება).';
+  try{const m=await globalMedals();if(medTab==='all')box.innerHTML=medalTable(m,'ჯერ არავის მოუგია მედალი — იყავი პირველი!');}
+  catch(e){console.error(e);if(medTab!=='all')return;
+    const msg=e.message==='noconfig'?'საერთო ცხრილი ხელმისაწვდომია მხოლოდ ონლაინ ვერსიაში (ghvedashvili.github.io/game).'
+      :/permission/i.test(e.message+e.code)?'ბაზამ წვდომა უარყო: Firebase-ში Realtime Database → Rules-ში ჩასვი ახალი წესები (medals) და დააჭირე Publish.'
+      :/admin-restricted|operation-not-allowed/i.test(e.message+e.code)?'Firebase-ში ჩართე Authentication → Sign-in method → Anonymous.'
+      :'ვერ ჩაიტვირთა: '+(e.code||e.message);
+    box.innerHTML=`<div style="opacity:.8;padding:16px;font-size:13px">${msg}</div>`;}
 }
 $('medBtn').onclick=()=>openMedals('all');$('tAll').onclick=()=>openMedals('all');$('tMine').onclick=()=>openMedals('mine');
 $('medClose').onclick=()=>$('medModal').classList.add('hide');
 
+let pickMode='champ',pickTaken=new Set(),pickCb=null;
+const ONLINE_OK=!!(window.FIREBASE_CONFIG&&window.FIREBASE_CONFIG.apiKey&&!/YOUR_/.test(window.FIREBASE_CONFIG.apiKey))||new URLSearchParams(location.search).has('mock');
+const ovs=['home','pick','tourOv','friend','bracket','end'];
+function showOnly(id){for(const o of ovs)$(o).classList.toggle('hide',o!==id);state='menu';$('hud').style.visibility='hidden';$('skip').style.display='none';hint('');}
+function nickEmail(n){return encodeURIComponent(n.trim().toLowerCase()).replace(/%/g,'_')+'@players.geopen.ge';}
+function accErr(e){const c=(e&&(e.code||e.message))||'';
+  return /email-already-in-use|credential-already-in-use/.test(c)?'ეს ნიკი უკვე დაკავებულია':/weak-password/.test(c)?'პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს'
+   :/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)?'ნიკი ან პაროლი არასწორია'
+   :/operation-not-allowed/.test(c)?'Firebase-ში ჩართე Authentication → Email/Password':/too-many/.test(c)?'ბევრი მცდელობა — სცადე ცოტა ხანში':/network/.test(c)?'ინტერნეტთან კავშირი ვერ დამყარდა':'შეცდომა: '+c;}
+async function loadAccount(){
+  if(!ONLINE_OK)return;
+  try{const n=await getNet();PID=n.uid()||PID;
+    if(n.isReg()){const d=(await n.get('users/'+n.uid()))||{};ACC={reg:true,nick:n.nick()||d.nick||'',medals:d.medals||{},played:d.played||0};}
+    else ACC={reg:false,nick:'',medals:null,played:0};}
+  catch(e){console.warn(e);}
+  renderAcc();if(!$('home').classList.contains('hide')){showStats();checkResume();}
+}
+function renderAcc(){
+  $('accBar').style.display=ONLINE_OK?'flex':'none';
+  $('accName').innerHTML=ACC.reg?`👤 <b>${ACC.nick.replace(/[<>&]/g,'')}</b>`:'👤 სტუმარი';
+  $('accBtn').textContent=ACC.reg?'გასვლა':'შესვლა / რეგისტრაცია';
+}
+function accMsg(t){$('aMsg').textContent=t||'';}
+$('accBtn').onclick=async()=>{
+  if(ACC.reg){try{const n=await getNet();await n.logout();}catch(e){}await loadAccount();showStats();buildPick();return;}
+  $('accModal').classList.remove('hide');accMsg('');
+};
+$('aClose').onclick=()=>$('accModal').classList.add('hide');
+function readForm(){const nick=$('aNick').value.trim(),pw=$('aPw').value;
+  if(!/^[\p{L}\p{N}_.-]{3,16}$/u.test(nick)){accMsg('ნიკი: 3–16 ასო ან ციფრი, ჰარის გარეშე');return null;}
+  if(pw.length<6){accMsg('პაროლი მინიმუმ 6 სიმბოლო უნდა იყოს');return null;}return{nick,pw};}
+$('aReg').onclick=async()=>{const f=readForm();if(!f)return;accMsg('⏳');
+  try{const n=await getNet();const guestM=JSON.parse(localStorage.getItem('pen_medals')||'{}'),guestC=JSON.parse(localStorage.getItem('pen_cup')||'{}');
+    await n.register(f.nick,f.pw);
+    await n.set('users/'+n.uid(),{nick:f.nick,medals:guestM,played:guestC.played||0,created:Date.now()}); // guest progress moves into the account
+    $('accModal').classList.add('hide');await loadAccount();buildPick();}
+  catch(e){accMsg(accErr(e));}};
+$('aLogin').onclick=async()=>{const f=readForm();if(!f)return;accMsg('⏳');
+  try{const n=await getNet();await n.login(f.nick,f.pw);$('accModal').classList.add('hide');await loadAccount();buildPick();}
+  catch(e){accMsg(accErr(e));}};
+// resume an online tournament after closing the page
+async function checkResume(){
+  const b=$('hResume');b.style.display='none';if(!ONLINE_OK)return;
+  const code=localStorage.getItem('pen_lastTour');if(!code)return;
+  try{const n=await getNet();const T=await n.get('tours/'+code);
+    if(T&&T.players&&T.players[PID]&&!T.podium){b.style.display='flex';$('hResumeTxt').textContent=`ტურნირი ${code} · ${tn(T.players[PID].team)}`;b.onclick=()=>enterTour(code);}
+    else if(!T||T.podium)localStorage.removeItem('pen_lastTour');}catch(e){}
+}
+function showHome(){checkResume();renderAcc();showOnly('home');showStats();$('homeMsg').textContent=rigs?'':'იტვირთება…';
+  document.querySelectorAll('.hb.online').forEach(b=>b.style.display=ONLINE_OK?'flex':'none');}
+function openPick(mode,title,cb,taken){
+  pickMode=mode;pickCb=cb;pickTaken=taken||new Set();$('pickTitle').textContent=title;buildPick();showOnly('pick');
+}
 function buildPick(){
   const md=loadMedals();
-  $('teamGrid').innerHTML=TEAMS.map((t,i)=>`<button class="tbtn" data-i="${i}" ${rigs?'':'disabled'}><span class="jer" style="background:${t.c1};--c2:${t.c2}"></span><span style="flex:1">${t.name}</span><span style="font-size:11px">${medalStr(md[i])}</span></button>`).join('');
-  showStats();
+  $('teamGrid').innerHTML=TEAMS.map((t,i)=>`<button class="tbtn ${pickTaken.has(i)?'taken':''}" data-i="${i}" ${rigs?'':'disabled'}><span class="jer" style="background:${t.c1};--c2:${t.c2}"></span><span style="flex:1">${t.name}</span><span style="font-size:11px">${pickTaken.has(i)?'დაკავ.':medalStr(md[i])}</span></button>`).join('');
   $('pickSub').textContent=rigs?'აირჩიე შენი რეგიონი':'იტვირთება…';
-  $('teamGrid').querySelectorAll('.tbtn').forEach(b=>b.onclick=()=>{ac();ambience();if(pickMode==='friend')showFriend(+b.dataset.i);else newTournament(+b.dataset.i);});
+  $('teamGrid').querySelectorAll('.tbtn').forEach(b=>b.onclick=()=>{unlockAudio();pickCb&&pickCb(+b.dataset.i);});
 }
+$('pickBack').onclick=()=>{if(pickMode==='tourJoin'||pickMode==='tourCreate'){showOnly('tourOv');}else showHome();};
+$('hChamp').onclick=()=>openPick('champ','🏆 ჩემპიონატი',t=>newTournament(t));
+$('hFriend').onclick=()=>openPick('friend','👥 მეგობართან',t=>showFriend(t));
+$('hTour').onclick=()=>openTourStart();
 function newTournament(my){
   myTeamHL=my;
   const ids=[...Array(16).keys()].sort(()=>Math.random()-.5);
   const r0=[];for(let i=0;i<8;i++)r0.push({a:ids[i*2],b:ids[i*2+1],res:null});
   TOUR={my,rounds:[r0],out:false,champ:null,third:null,podium:null};
   const c=loadCup();c.played++;saveCup(c);
-  $('pick').classList.add('hide');showBracket();
+  showBracket();
 }
 function nextMatch(){if(!TOUR||TOUR.champ!=null)return null;if(TOUR.third&&!TOUR.third.res)return TOUR.third;const r=TOUR.rounds[TOUR.rounds.length-1];const m=r.find(x=>!x.res);return m||null;}
 const loser=m=>m.res.w===m.a?m.b:m.a;
@@ -688,7 +812,7 @@ function advance(){
   if(r.length===1){
     if(TOUR.third&&!TOUR.third.res)return;
     const f=r[0];TOUR.champ=f.res.w;TOUR.podium={g:f.res.w,s:loser(f),b:TOUR.third.res.w};
-    for(const k of['g','s','b'])if(TOUR.podium[k]===TOUR.my){addMedal(TOUR.my,k);getNet().then(n=>n.addMedal(TOUR.my,k)).catch(()=>{});}
+    for(const k of['g','s','b'])if(TOUR.podium[k]===TOUR.my){addMedal(TOUR.my,k);globalMedal(TOUR.my,k);}
     return;
   }
   const n=[];for(let i=0;i<r.length;i+=2)n.push({a:r[i].res.w,b:r[i+1].res.w,res:null});TOUR.rounds.push(n);
@@ -709,7 +833,7 @@ function skipUntilMine(){let m;while((m=nextMatch())&&!(!TOUR.out&&(m.a===TOUR.m
 const tn=i=>TEAMS[i].name;
 const chip=i=>`<span class="j" style="background:${TEAMS[i].c1};--c2:${TEAMS[i].c2}"></span>`;
 function showBracket(){
-  state='menu';$('hud').style.visibility='hidden';$('end').classList.add('hide');$('bracket').classList.remove('hide');$('skip').style.display='none';hint('');
+  showOnly('bracket');
   const nx=nextMatch();let html='';
   for(let r=0;r<4;r++){
     const rr=TOUR.rounds[r];const cnt=8>>r;let col='';
@@ -737,7 +861,7 @@ function showBracket(){
   const B=[];let lbl='';
   if(TOUR.champ!=null){
     const P=TOUR.podium;lbl=P.g===TOUR.my?'🥇 შენ გახდი საქართველოს ჩემპიონი!':P.s===TOUR.my?'🥈 ვერცხლი — მეორე ადგილი!':P.b===TOUR.my?'🥉 ბრინჯაო — მესამე ადგილი!':`🏆 ჩემპიონი: ${tn(P.g)}`;
-    B.push(['btn sm','ახალი ტურნირი',()=>{$('bracket').classList.add('hide');buildPick();$('pick').classList.remove('hide');showStats();}]);
+    B.push(['btn sm','ახალი ტურნირი',()=>openPick('champ','🏆 ჩემპიონატი',t=>newTournament(t))],['btn2','🏠 მთავარი',showHome]);
   }else if(!TOUR.out&&(nx.a===TOUR.my||nx.b===TOUR.my)){
     lbl=`${nx.third?'🥉 ბრინჯაოსთვის: ':nx===TOUR.rounds[3]?.[0]?'🥇 ფინალი: ':'შენი მატჩი: '}${tn(nx.a)} — ${tn(nx.b)}`;B.push(['btn sm','▶ თამაში',()=>startMatch(nx,true)]);
   }else{
@@ -745,6 +869,7 @@ function showBracket(){
     B.push(['btn sm','👀 ყურება',()=>startMatch(nx,false)],['btn2','⏭ გამოტოვება',()=>{skipOne();showBracket();}]);
     if(!TOUR.out)B.push(['btn2','⏩ ჩემს მატჩამდე',()=>{skipUntilMine();showBracket();}]);
     else B.push(['btn2','⏩ ბოლომდე',()=>{while(nextMatch())skipOne();showBracket();}]);
+    B.push(['btn2','🏠',showHome]);
   }
   $('actLbl').innerHTML=lbl;const box=$('actBtns');box.innerHTML='';
   for(const [c,t,f] of B){const e=document.createElement('button');e.className=c;e.textContent=t;e.onclick=f;box.appendChild(e);}
@@ -760,10 +885,11 @@ function startMatch(m,mine){
   cur={m,A,B,kits:matchKits(TEAMS[A],TEAMS[B])};
   rigs.kickA.setKit(cur.kits.ka);rigs.kickB.setKit(cur.kits.kb);rigs.gkA.setKit(cur.kits.ga);rigs.gkB.setKit(cur.kits.gb);
   human=mine?'p':null;setHUDTeams(A,B);
-  $('bracket').classList.add('hide');$('hud').style.visibility='visible';$('skip').style.display=human?'none':'block';
+  for(const o of ovs)$(o).classList.add('hide');$('hud').style.visibility='visible';$('skip').style.display=human?'none':'block';
   pRes=[];cRes=[];playerShots=[];turn='p';sfx.whistle(false);setupKick();
 }
 function finishMatch(){
+  if(cur&&cur.tour){finishTourCpu();return;}
   const pr=swapped?cRes:pRes,cr=swapped?pRes:cRes;record(cur.m,pr,cr);
   const wA=winnerOf(pRes,cRes)==='p',wTeam=wA?cur.A:cur.B,isFinal=cur.m===TOUR.rounds[3]?.[0],isThird=!!cur.m.third;
   state='over';renderHUD();sfx.whistle(true);$('skip').style.display='none';
@@ -781,133 +907,350 @@ function finishMatch(){
   setTimeout(()=>$('end').classList.remove('hide'),500);
 }
 $('skip').onclick=e=>{e.stopPropagation();if(human||!cur||state==='over')return;const r=simulate(pRes,cRes);pRes=r.pr;cRes=r.cr;finishMatch();};
-// ================= online (friend match) =================
-let pickMode='champ',online=null,NET=null,myTeamF=0;
+// ================= online (friend match + online tournament) =================
+let online=null,NET=null,myTeamF=0,tour=null,tourT=null;
 const qs=new URLSearchParams(location.search);
-function setMode(m){pickMode=m;$('mChamp').classList.toggle('on',m==='champ');$('mFriend').classList.toggle('on',m==='friend');
-  $('pickSub').textContent=!rigs?'იტვირთება…':m==='friend'?'აირჩიე შენი რეგიონი მეგობართან სათამაშოდ':'აირჩიე შენი რეგიონი';}
-$('mChamp').onclick=()=>setMode('champ');$('mFriend').onclick=()=>setMode('friend');
+const getPath=(o,path)=>{let c=o;for(const k of path.split('/')){if(c==null)return null;c=c[k];}return c===undefined?null:c;};
 const setPath=(o,path,v)=>{const k=path.split('/');let c=o;for(let i=0;i<k.length-1;i++){if(c[k[i]]==null||typeof c[k[i]]!=='object')c[k[i]]={};c=c[k[i]];}if(v===null)delete c[k[k.length-1]];else c[k[k.length-1]]=v;};
-// local test backend: two tabs of the same browser (?mock=1)
+const clone=v=>v==null?null:JSON.parse(JSON.stringify(v));
+// --- local test backend: tabs of one browser share localStorage (?mock=1) ---
 const MockNet={
-  ls:{},key:c=>'mockroom_'+c,read(c){try{return JSON.parse(localStorage.getItem(this.key(c))||'null');}catch(e){return null;}},
-  put(c,r){if(r===null)localStorage.removeItem(this.key(c));else localStorage.setItem(this.key(c),JSON.stringify(r));this.fire(c);},
-  fire(c){const r=this.read(c);(this.ls[c]||[]).forEach(f=>setTimeout(()=>f(r)));},
-  async init(){addEventListener('storage',e=>{if(e.key&&e.key.startsWith('mockroom_'))this.fire(e.key.slice(9));});},
-  async exists(c){return!!this.read(c);},
-  async create(c,o){this.put(c,o);},
-  async join(c,g){const r=this.read(c);if(!r||r.guest)return false;r.guest=g;r.state='playing';this.put(c,r);return true;},
-  watch(c,f){(this.ls[c]=this.ls[c]||[]).push(f);setTimeout(()=>f(this.read(c)));return()=>{this.ls[c]=(this.ls[c]||[]).filter(x=>x!==f);};},
-  async set(c,path,v){const r=this.read(c);if(!r)return;setPath(r,path,v);this.put(c,r);},
-  async leave(c,role){if(role==='host')this.put(c,null);else await this.set(c,'guest/online',false);},
-  async addMedal(t,k){const m=JSON.parse(localStorage.getItem('mock_medals')||'{}');m[t]=m[t]||{};m[t][k]=(m[t][k]||0)+1;localStorage.setItem('mock_medals',JSON.stringify(m));},
-  async getMedals(){return JSON.parse(localStorage.getItem('mock_medals')||'{}');}
+  ws:[],
+  read(){try{return JSON.parse(localStorage.getItem('mockdb')||'{}');}catch(e){return{};}},
+  write(db){localStorage.setItem('mockdb',JSON.stringify(db));this.fire();},
+  fire(){const db=this.read();for(const w of this.ws){const v=getPath(db,w.path);const j=JSON.stringify(v);if(j!==w.last){w.last=j;setTimeout(()=>w.cb(clone(v)));}}},
+  async init(){addEventListener('storage',e=>{if(e.key==='mockdb')this.fire();});
+    if(!localStorage.getItem('mock_uid')){localStorage.setItem('mock_uid','anon_'+Math.random().toString(36).slice(2,9));localStorage.removeItem('mock_nick');}},
+  uid(){return localStorage.getItem('mock_uid');},isReg(){return!!localStorage.getItem('mock_nick');},nick(){return localStorage.getItem('mock_nick')||'';},
+  _acc(){return JSON.parse(localStorage.getItem('mock_acc')||'{}');},
+  async register(nick,pw){const a=this._acc(),k=nickEmail(nick);if(a[k])throw{code:'auth/email-already-in-use'};if(pw.length<6)throw{code:'auth/weak-password'};a[k]={pw,uid:this.uid()};localStorage.setItem('mock_acc',JSON.stringify(a));localStorage.setItem('mock_nick',nick);},
+  async login(nick,pw){const x=this._acc()[nickEmail(nick)];if(!x||x.pw!==pw)throw{code:'auth/invalid-credential'};localStorage.setItem('mock_uid',x.uid);localStorage.setItem('mock_nick',nick);},
+  async logout(){localStorage.removeItem('mock_nick');localStorage.setItem('mock_uid','anon_'+Math.random().toString(36).slice(2,9));},
+  async get(p){return clone(getPath(this.read(),p));},
+  async set(p,v){const db=this.read();setPath(db,p,clone(v));this.write(db);},
+  async remove(p){return this.set(p,null);},
+  async tx(p,fn){const db=this.read();const nv=fn(clone(getPath(db,p)));if(nv===undefined)return{committed:false,val:getPath(db,p)};setPath(db,p,nv);this.write(db);return{committed:true,val:nv};},
+  watch(p,cb){const w={path:p,cb,last:undefined};this.ws.push(w);setTimeout(()=>this.fire());return()=>{this.ws=this.ws.filter(x=>x!==w);};},
+  onDiscSet(){},onDiscRemove(){}
 };
-// Firebase Realtime Database backend (config in firebase-config.js)
+// --- Firebase Realtime Database backend (config in firebase-config.js) ---
 const FireNet={
   async init(){
     const cfg=window.FIREBASE_CONFIG;if(!cfg||!cfg.apiKey||/YOUR_/.test(cfg.apiKey))throw new Error('noconfig');
-    const V='10.12.2',B=`https://www.gstatic.com/firebasejs/${V}/`;
+    const B='https://www.gstatic.com/firebasejs/10.12.2/';
     const [app,db,auth]=await Promise.all([import(B+'firebase-app.js'),import(B+'firebase-database.js'),import(B+'firebase-auth.js')]);
     this.f=db;const a=app.initializeApp(cfg);this.db=db.getDatabase(a);
-    await auth.signInAnonymously(auth.getAuth(a)); // silent, no sign-up for the player
+    this.A=auth;this.auth=auth.getAuth(a);
+    if(this.auth.authStateReady)await this.auth.authStateReady();
+    if(!this.auth.currentUser)await auth.signInAnonymously(this.auth); // silent: no sign-up needed to play
   },
-  r(c,p){return this.f.ref(this.db,'rooms/'+c+(p?'/'+p:''));},
-  async exists(c){return (await this.f.get(this.r(c))).exists();},
-  async create(c,o){await this.f.set(this.r(c),o);this.f.onDisconnect(this.r(c)).remove();},
-  async join(c,g){
-    // read first so the transaction starts from the server value, not an empty local cache
-    const snap=await this.f.get(this.r(c));const cur=snap.val();
-    if(!cur||cur.guest)return false;
-    const tag=Math.random().toString(36).slice(2);g={...g,tag};
-    const res=await this.f.runTransaction(this.r(c),r=>{if(r===null)return null;if(r.guest)return;r.guest=g;r.state='playing';return r;});
-    const v=res.snapshot&&res.snapshot.val();const ok=!!(res.committed&&v&&v.guest&&v.guest.tag===tag);
-    if(ok)this.f.onDisconnect(this.r(c,'guest/online')).set(false);return ok;},
-  watch(c,f){return this.f.onValue(this.r(c),s=>f(s.val()));},
-  async set(c,path,v){await this.f.set(this.r(c,path),v);},
-  async leave(c,role){if(role==='host')await this.f.remove(this.r(c));else await this.f.set(this.r(c,'guest/online'),false);},
-  async addMedal(t,k){const r=this.f.ref(this.db,`medals/${t}/${k}`);await this.f.get(r);await this.f.runTransaction(r,v=>(v||0)+1);},
-  async getMedals(){return (await this.f.get(this.f.ref(this.db,'medals'))).val()||{};}
+  r(p){return this.f.ref(this.db,p);},
+  uid(){return this.auth.currentUser&&this.auth.currentUser.uid;},
+  isReg(){const u=this.auth.currentUser;return!!(u&&!u.isAnonymous);},
+  nick(){const u=this.auth.currentUser;return u&&u.displayName||'';},
+  async register(nick,pw){const A=this.A,email=nickEmail(nick),cred=A.EmailAuthProvider.credential(email,pw);let u=this.auth.currentUser;
+    if(u&&u.isAnonymous)u=(await A.linkWithCredential(u,cred)).user;else u=(await A.createUserWithEmailAndPassword(this.auth,email,pw)).user;
+    await A.updateProfile(u,{displayName:nick});},
+  async login(nick,pw){await this.A.signInWithEmailAndPassword(this.auth,nickEmail(nick),pw);},
+  async logout(){await this.A.signOut(this.auth);await this.A.signInAnonymously(this.auth);},
+  async get(p){return (await this.f.get(this.r(p))).val();},
+  async set(p,v){await this.f.set(this.r(p),v);},
+  async remove(p){await this.f.remove(this.r(p));},
+  async tx(p,fn){await this.f.get(this.r(p));const res=await this.f.runTransaction(this.r(p),fn);return{committed:res.committed,val:res.snapshot.val()};},
+  watch(p,cb){return this.f.onValue(this.r(p),s=>cb(s.val()));},
+  onDiscSet(p,v){this.f.onDisconnect(this.r(p)).set(v);},
+  onDiscRemove(p){this.f.onDisconnect(this.r(p)).remove();}
 };
-async function getNet(){
-  if(NET)return NET;const n=qs.has('mock')?MockNet:FireNet;await n.init();NET=n;return n;
-}
+async function getNet(){if(NET)return NET;const n=qs.has('mock')?MockNet:FireNet;await n.init();NET=n;PID=n.uid()||PID;return n;}
+function netErr(e){console.error(e);const m=(e&&(e.code||'')+' '+(e.message||''))||'';
+  return /noconfig/.test(m)?'ონლაინ რეჟიმი ჯერ არ არის ჩართული (Firebase-ის პარამეტრები აკლია).'
+    :/permission/i.test(m)?'ბაზამ წვდომა უარყო — შეამოწმე Firebase-ის Rules და Anonymous შესვლა.'
+    :/admin-restricted|operation-not-allowed/i.test(m)?'Firebase-ში ჩართე Authentication → Anonymous.'
+    :'კავშირი ვერ დამყარდა: '+m;}
+// global medal counters
+async function globalMedal(t,k){try{const n=await getNet();await n.tx(`medals/${t}/${k}`,v=>(v||0)+1);}catch(e){console.warn(e);}}
+async function globalMedals(){const n=await getNet();return (await n.get('medals'))||{};}
+let PID=(()=>{try{let p=localStorage.getItem('pen_pid');if(!p){p='p'+Math.random().toString(36).slice(2,10);localStorage.setItem('pen_pid',p);}return p;}catch(e){return 'p'+Math.random().toString(36).slice(2,10);}})();
+
+// ---------------- 1 × 1 friend match ----------------
 function fMsg(t){$('fMsg').textContent=t||'';}
 function showFriend(team){
-  myTeamF=team;$('pick').classList.add('hide');$('friend').classList.remove('hide');
+  myTeamF=team;showOnly('friend');
   $('fTeam').innerHTML=`შენი გუნდი: ${chip(team)} <b>${tn(team)}</b>`;
   $('fMain').style.display='flex';$('fWait').style.display='none';fMsg('');
 }
-async function netOrError(){try{return await getNet();}catch(e){fMsg(e.message==='noconfig'?'ონლაინ თამაში ჯერ არ არის ჩართული (Firebase-ის პარამეტრები აკლია).':'კავშირი ვერ დამყარდა. შეამოწმე ინტერნეტი.');return null;}}
 $('fCreate').onclick=async()=>{
-  const n=await netOrError();if(!n)return;
+  let n;try{n=await getNet();}catch(e){fMsg(netErr(e));return;}
   let code;
-  try{for(let i=0;i<8;i++){code=String(1000+Math.floor(Math.random()*9000));if(!(await n.exists(code)))break;}
-    await n.create(code,{v:1,state:'waiting',created:Date.now(),host:{team:myTeamF,online:true},guest:null});}
-  catch(e){console.error(e);fMsg(/permission/i.test(e.message)?'ბაზამ წვდომა უარყო — შეამოწმე Rules და Anonymous შესვლა.':'შეცდომა: '+e.message);return;}
-  online={role:'host',code,k:0,round:0,picked:false,pz:-1,started:false,ended:false,rm:0,room:null};
+  try{for(let i=0;i<8;i++){code=String(1000+Math.floor(Math.random()*9000));if(!(await n.get('rooms/'+code)))break;}
+    await n.set('rooms/'+code,{v:1,state:'waiting',created:Date.now(),host:{team:myTeamF,online:true}});n.onDiscRemove('rooms/'+code);}
+  catch(e){fMsg(netErr(e));return;}
+  online={kind:'friend',role:'host',code,base:'rooms/'+code,k:0,round:0,picked:false,pz:-1,started:false,ended:false};
   $('fMain').style.display='none';$('fWait').style.display='flex';$('fBig').textContent=code;fMsg('');
-  online.unwatch=n.watch(code,onRoom);
+  online.unwatch=n.watch('rooms/'+code,onRoom);
 };
 $('fJoin').onclick=async()=>{
   const code=$('fCode').value.trim();if(!/^\d{4}$/.test(code)){fMsg('ჩაწერე 4-ციფრიანი კოდი');return;}
-  const n=await netOrError();if(!n)return;
-  let ok=false;try{ok=await n.join(code,{team:myTeamF,online:true});}catch(e){console.error(e);fMsg(/permission/i.test(e.message)?'ბაზამ წვდომა უარყო — შეამოწმე Rules და Anonymous შესვლა.':'შეცდომა: '+e.message);return;}
+  let n;try{n=await getNet();}catch(e){fMsg(netErr(e));return;}
+  const tag=Math.random().toString(36).slice(2);let ok=false;
+  try{const r=await n.get('rooms/'+code);if(r&&!r.guest){
+      const res=await n.tx('rooms/'+code,x=>{if(x===null)return null;if(x.guest)return;x.guest={team:myTeamF,online:true,tag};x.state='playing';return x;});
+      ok=!!(res.committed&&res.val&&res.val.guest&&res.val.guest.tag===tag);}}
+  catch(e){fMsg(netErr(e));return;}
   if(!ok){fMsg('მატჩი ვერ მოიძებნა ან უკვე დაწყებულია');return;}
-  online={role:'guest',code,k:0,round:0,picked:false,pz:-1,started:false,ended:false,rm:0,room:null};
-  online.unwatch=n.watch(code,onRoom);
+  n.onDiscSet(`rooms/${code}/guest/online`,false);
+  online={kind:'friend',role:'guest',code,base:'rooms/'+code,k:0,round:0,picked:false,pz:-1,started:false,ended:false};
+  online.unwatch=n.watch('rooms/'+code,onRoom);
 };
-$('fBack').onclick=()=>{leaveOnline();$('friend').classList.add('hide');buildPick();setMode('friend');$('pick').classList.remove('hide');};
-function leaveOnline(){if(!online)return;try{online.unwatch&&online.unwatch();}catch(e){}if(NET)NET.leave(online.code,online.role).catch(()=>{});online=null;human=null;}
+$('fBack').onclick=()=>{leaveOnline();openPick('friend','👥 მეგობართან',t=>showFriend(t));};
+function leaveOnline(){
+  if(!online)return;try{online.unwatch&&online.unwatch();}catch(e){}
+  if(NET&&online.kind==='friend'){if(online.role==='host')NET.remove(online.base).catch(()=>{});else NET.set(online.base+'/guest/online',false).catch(()=>{});}
+  online=null;human=null;
+}
 const myKey=()=>online.role==='host'?'h':'g';
-function startOnline(r){
+function startOnlineMatch(A,B){
   online.started=true;online.ended=false;online.k=0;online.picked=false;online.pz=-1;
-  const A=r.host.team,B=r.guest.team;
-  cur={m:null,A,B,kits:matchKits(TEAMS[A],TEAMS[B])};
+  cur={m:null,A,B,kits:matchKits(TEAMS[A],TEAMS[B]),tour:online.kind==='tour'?online.tour:null};
   rigs.kickA.setKit(cur.kits.ka);rigs.kickB.setKit(cur.kits.kb);rigs.gkA.setKit(cur.kits.ga);rigs.gkB.setKit(cur.kits.gb);
   human=online.role==='host'?'p':'c';setHUDTeams(A,B);
-  ['friend','pick','end','bracket'].forEach(id=>$(id).classList.add('hide'));$('hud').style.visibility='visible';$('skip').style.display='none';
+  for(const o of ovs)$(o).classList.add('hide');$('hud').style.visibility='visible';$('skip').style.display='none';
   pRes=[];cRes=[];playerShots=[];turn='p';sfx.whistle(false);setupKick();
 }
 function onlinePick(z){
   if(!online||online.picked||state!=='aim')return;
   online.picked=true;online.pz=z;hint('⏳ ელოდება მეტოქეს…');
-  NET.set(online.code,`m${online.round}/${online.k}/${myKey()}`,z);
+  NET.set(`${online.base}/m${online.round}/${online.k}/${myKey()}`,z);
+}
+// shared kick resolution for both online kinds: host plans, both execute
+function processKicks(mobj){
+  if(!online||!online.started||online.ended)return;
+  const kk=(mobj||{})[online.k];if(!kk)return;
+  if(online.role==='host'&&kk.h!=null&&kk.g!=null&&!kk.res){
+    const shooterHost=online.k%2===0,sh=shooterHost?kk.h:kk.g,dv=shooterHost?kk.g:kk.h;
+    NET.set(`${online.base}/m${online.round}/${online.k}/res`,planKick(sh,dv));return;
+  }
+  if(kk.res&&state==='aim'&&online.picked)execKick(kk.res);
 }
 function onRoom(r){
-  if(!online)return;
-  if(!r){if(online.started&&!online.ended)opponentLeft();else if(online.role==='guest')opponentLeft();return;}
+  if(!online||online.kind!=='friend')return;
+  if(!r){if(!online.ended)opponentLeft();return;}
   online.room=r;
   const oppOn=online.role==='host'?(r.guest&&r.guest.online!==false):(r.host&&r.host.online!==false);
   if(online.started&&r.guest&&!oppOn&&!online.ended){opponentLeft();return;}
-  if(!online.started&&r.guest&&r.host){startOnline(r);return;}
-  // rematch: both pressed
-  const rm=r.rematch||{};if(online.ended&&rm.h>online.round&&rm.g>online.round){online.round++;startOnline(r);return;}
-  if(!online.started||online.ended)return;
-  const kk=(r['m'+online.round]||{})[online.k];if(!kk)return;
-  if(online.role==='host'&&kk.h!=null&&kk.g!=null&&!kk.res){
-    const shooterHost=online.k%2===0,sh=shooterHost?kk.h:kk.g,dv=shooterHost?kk.g:kk.h;
-    NET.set(online.code,`m${online.round}/${online.k}/res`,planKick(sh,dv));return;
-  }
-  if(kk.res&&state==='aim'&&online.picked){execKick(kk.res);}
+  if(!online.started&&r.guest&&r.host){startOnlineMatch(r.host.team,r.guest.team);return;}
+  const rm=r.rematch||{};if(online.ended&&rm.h>online.round&&rm.g>online.round){online.round++;startOnlineMatch(r.host.team,r.guest.team);return;}
+  processKicks(r['m'+online.round]);
 }
+function onlineRefresh(){if(!online)return;if(online.kind==='friend')onRoom(online.room);else processKicks(online.game&&online.game.m0);}
 function opponentLeft(){
   if(!online)return;online.ended=true;state='over';
   $('eicon').textContent='📴';$('etitle').textContent='მეტოქე გავიდა';$('eteams').innerHTML='';$('escore').textContent='';
-  const box=$('eBtns');box.innerHTML='';const e=document.createElement('button');e.className='btn sm';e.textContent='🏠 მენიუ';e.onclick=backToMenu;box.appendChild(e);
-  $('friend').classList.add('hide');$('end').classList.remove('hide');
+  const box=$('eBtns');box.innerHTML='';const e=document.createElement('button');e.className='btn sm';e.textContent='🏠 მთავარი';e.onclick=backToMenu;box.appendChild(e);
+  for(const o of ovs)$(o).classList.add('hide');$('end').classList.remove('hide');
 }
-function backToMenu(){leaveOnline();state='menu';$('end').classList.add('hide');$('hud').style.visibility='hidden';hint('');buildPick();setMode('friend');$('pick').classList.remove('hide');}
+function backToMenu(){leaveOnline();showHome();}
 function finishOnline(){
+  if(online.kind==='tour'){finishTourOnline();return;}
   online.ended=true;state='over';renderHUD();sfx.whistle(true);
   const w=winnerOf(pRes,cRes),iWon=w===human;if(iWon)cheer=4;
   $('eicon').textContent=iWon?'🏆':'😔';$('etitle').textContent=iWon?'გაიმარჯვე!':'წააგე';
   $('eteams').innerHTML=`${chip(cur.A)} ${tn(cur.A)} — ${tn(cur.B)} ${chip(cur.B)}`;$('escore').textContent=`${sum(pRes)} : ${sum(cRes)}`;
   const box=$('eBtns');box.innerHTML='';
   const r=document.createElement('button');r.className='btn sm';r.textContent='🔁 რევანში';
-  r.onclick=()=>{r.disabled=true;r.textContent='⏳ ელოდება მეტოქეს…';NET.set(online.code,'rematch/'+myKey(),online.round+1);};
-  const m=document.createElement('button');m.className='btn2';m.textContent='🏠 მენიუ';m.onclick=backToMenu;
+  r.onclick=()=>{r.disabled=true;r.textContent='⏳ ელოდება მეტოქეს…';NET.set(`${online.base}/rematch/${myKey()}`,online.round+1);};
+  const m=document.createElement('button');m.className='btn2';m.textContent='🏠 მთავარი';m.onclick=backToMenu;
   box.appendChild(r);box.appendChild(m);setTimeout(()=>$('end').classList.remove('hide'),500);
+}
+
+// ---------------- online tournament (4 / 8 / 16) ----------------
+let tSize=8;
+function tMsg(t){$('tMsg').textContent=t||'';}
+document.querySelectorAll('#tSizes button').forEach(b=>b.onclick=()=>{tSize=+b.dataset.n;document.querySelectorAll('#tSizes button').forEach(x=>x.classList.toggle('on',x===b));});
+function openTourStart(){leaveTour();showOnly('tourOv');$('tStart').style.display='flex';$('tLobby').style.display='none';tMsg('');}
+$('tBack').onclick=()=>{leaveTour();showHome();};
+$('tCreate').onclick=()=>openPick('tourCreate',`🏟️ ტურნირი · ${tSize} გუნდი`,createTour);
+$('tJoin').onclick=async()=>{
+  const code=$('tCode').value.trim();if(!/^\d{5}$/.test(code)){tMsg('ჩაწერე 5-ციფრიანი კოდი');return;}
+  let n;try{n=await getNet();}catch(e){tMsg(netErr(e));return;}
+  let T;try{T=await n.get('tours/'+code);}catch(e){tMsg(netErr(e));return;}
+  if(!T){tMsg('ტურნირი ვერ მოიძებნა');return;}
+  const pl=T.players||{};
+  if(pl[PID]){enterTour(code);return;}
+  if(T.state!=='lobby'){tMsg('ტურნირი უკვე დაწყებულია');return;}
+  if(Object.keys(pl).length>=T.size){tMsg('ტურნირი სავსეა');return;}
+  const taken=new Set(Object.values(pl).map(p=>p.team));
+  openPick('tourJoin',`🏟️ ტურნირი ${code}`,t=>joinTour(code,t),taken);
+};
+async function createTour(team){
+  let n;try{n=await getNet();}catch(e){showOnly('tourOv');tMsg(netErr(e));return;}
+  let code;
+  try{for(let i=0;i<8;i++){code=String(10000+Math.floor(Math.random()*90000));if(!(await n.get('tours/'+code)))break;}
+    await n.set('tours/'+code,{v:1,size:tSize,state:'lobby',host:PID,created:Date.now(),players:{[PID]:{team,online:true,t:Date.now(),nick:ACC.reg?ACC.nick:''}}});}
+  catch(e){showOnly('tourOv');tMsg(netErr(e));return;}
+  enterTour(code);
+}
+async function joinTour(code,team){
+  const n=NET;let err='';
+  const res=await n.tx('tours/'+code,T=>{
+    if(T===null)return null;
+    const pl=T.players||{};if(pl[PID])return T;
+    if(T.state!=='lobby'){err='ტურნირი უკვე დაწყებულია';return;}
+    if(Object.keys(pl).length>=T.size){err='ტურნირი სავსეა';return;}
+    if(Object.values(pl).some(p=>p.team===team)){err='ეს რეგიონი უკვე დაკავებულია — აირჩიე სხვა';return;}
+    pl[PID]={team,online:true,t:Date.now(),nick:ACC.reg?ACC.nick:''};T.players=pl;return T;}).catch(e=>{err=netErr(e);return{committed:false};});
+  if(!res.committed||!res.val||!res.val.players||!res.val.players[PID]){showOnly('tourOv');tMsg(err||'შესვლა ვერ მოხერხდა');return;}
+  enterTour(code);
+}
+function enterTour(code){
+  try{localStorage.setItem('pen_lastTour',code);}catch(e){}
+  tour={code,base:'tours/'+code,awarded:false};
+  NET.onDiscSet(`${tour.base}/players/${PID}/online`,false);
+  NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
+  tour.unwatch=NET.watch(tour.base,onTour);
+  showOnly('tourOv');$('tStart').style.display='none';$('tLobby').style.display='flex';$('tBig').textContent=code;tMsg('');
+}
+function leaveTour(){if(!tour)return;try{tour.unwatch&&tour.unwatch();}catch(e){}if(NET)NET.set(`${tour.base}/players/${PID}/online`,false).catch(()=>{});tour=null;tourT=null;}
+const tMine=()=>tourT&&tourT.players&&tourT.players[PID]?tourT.players[PID].team:-1;
+const humansOf=T=>{const m={};for(const [pid,p] of Object.entries(T.players||{}))m[p.team]=pid;return m;};
+const arr=x=>Array.isArray(x)?x:x?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):[];
+function tRounds(T){return arr(T.rounds).map(arr);}
+function roundName(size,r){const R=Math.log2(size),d=R-1-r;return['ფინალი','ნახევარფინალი','მეოთხედფინალი','1/8 ფინალი'][d];}
+function onTour(T){
+  if(!tour)return;
+  if(!T){leaveTour();showHome();return;}
+  tourT=T;
+  if(T.players&&T.players[PID]&&T.players[PID].online===false)NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
+  if(T.state==='lobby'){renderLobby(T);return;}
+  doDuties(T);
+  if(T.podium&&!tour.awarded){tour.awarded=true;const my=tMine();
+    for(const k of['g','s','b'])if(T.podium[k]===my){const key='awarded_'+tour.code;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');}} // online tournaments are friendly: no championship titles
+  }
+  if(state==='menu'&&!$('bracket').classList.contains('hide')||!$('tourOv').classList.contains('hide'))showTourBracket();
+  if(online&&online.kind==='tour')online.T=T;
+}
+function renderLobby(T){
+  const pl=Object.entries(T.players||{}).sort((a,b)=>a[1].t-b[1].t);
+  $('tCount').textContent=`${pl.length} / ${T.size} მოთამაშე`;
+  $('tPlayers').innerHTML=pl.map(([pid,p])=>`<div>${chip(p.team)}<b style="flex:1">${tn(p.team)}${p.nick?` <span style="opacity:.6;font-weight:500">· ${String(p.nick).replace(/[<>&]/g,"")}</span>`:""}</b><span style="opacity:.65;font-size:12px">${pid===PID?'შენ':''}${pid===T.host?' 👑':''}${p.online===false?' 📴':''}</span></div>`).join('');
+  const isHost=T.host===PID;
+  $('tGo').style.display=isHost?'inline-block':'none';$('tGo').disabled=pl.length<2;
+  $('tNote').textContent=isHost?(pl.length<2?'დაელოდე, სანამ ერთი მოთამაშე მაინც შემოვა':`ცარიელ ${T.size-pl.length} ადგილს კომპიუტერი შეავსებს`):'⏳ ელოდება ორგანიზატორს, რომ დაიწყოს…';
+}
+$('tGo').onclick=async()=>{
+  const T=tourT;if(!T||T.host!==PID)return;
+  const hum=Object.values(T.players||{}).map(p=>p.team);
+  const cpu=[...Array(16).keys()].filter(i=>!hum.includes(i)).sort(()=>Math.random()-.5).slice(0,T.size-hum.length);
+  const ids=[...hum,...cpu].sort(()=>Math.random()-.5);
+  const r0=[];for(let i=0;i<ids.length;i+=2)r0.push({a:ids[i],b:ids[i+1]});
+  await NET.tx(tour.base,X=>{if(X===null)return null;if(X.state!=='lobby')return;X.state='running';X.rounds=[r0];X.started=Date.now();return X;});
+};
+// the host (or, if the host left, the first online player) simulates CPU matches and advances the bracket
+function dutyPid(T){const pl=T.players||{};if(pl[T.host]&&pl[T.host].online!==false)return T.host;return Object.keys(pl).filter(k=>pl[k].online!==false).sort()[0];}
+function doDuties(T){
+  if(T.state!=='running'||dutyPid(T)!==PID||T.podium)return;
+  const H=humansOf(T),R=tRounds(T),r=R.length-1,cur=R[r];
+  const simRes=(a,b)=>{const s=simulate();return{sa:sum(s.pr),sb:sum(s.cr),w:winnerOf(s.pr,s.cr)==='p'?a:b};};
+  const w={};let changed=false;
+  const off=t=>H[t]!=null&&(T.players[H[t]]||{}).online===false; // a player who left is replaced by the computer
+  cur.forEach((m,i)=>{if(!m.res&&((H[m.a]==null||off(m.a))&&(H[m.b]==null||off(m.b)))){w[`rounds/${r}/${i}/res`]=simRes(m.a,m.b);m.res=w[`rounds/${r}/${i}/res`];changed=true;}});
+  if(T.third&&!T.third.res&&(H[T.third.a]==null||off(T.third.a))&&(H[T.third.b]==null||off(T.third.b))){w['third/res']=simRes(T.third.a,T.third.b);T.third.res=w['third/res'];changed=true;}
+  const done=cur.every(m=>m.res);
+  if(done){
+    if(cur.length===1){if(T.third&&T.third.res){const f=cur[0];w['podium']={g:f.res.w,s:f.res.w===f.a?f.b:f.a,b:T.third.res.w};changed=true;}}
+    else if(!R[r+1]){
+      const nx=[];for(let i=0;i<cur.length;i+=2)nx.push({a:cur[i].res.w,b:cur[i+1].res.w});
+      w[`rounds/${r+1}`]=nx;
+      if(cur.length===2)w['third']={a:cur[0].res.w===cur[0].a?cur[0].b:cur[0].a,b:cur[1].res.w===cur[1].a?cur[1].b:cur[1].a};
+      changed=true;
+    }
+  }
+  if(changed)for(const [k,v] of Object.entries(w))NET.set(`${tour.base}/${k}`,v);
+}
+// my pending match in the running tournament
+function myTourMatch(T){
+  const my=tMine();if(my<0||T.podium)return null;const R=tRounds(T),r=R.length-1;
+  if(T.third&&!T.third.res&&(T.third.a===my||T.third.b===my))return{m:T.third,key:'third',path:'third'};
+  const i=R[r].findIndex(m=>!m.res&&(m.a===my||m.b===my));
+  return i<0?null:{m:R[r][i],key:`r${r}_${i}`,path:`rounds/${r}/${i}`};
+}
+function myTourOut(T){
+  const my=tMine();const R=tRounds(T);
+  for(let r=0;r<R.length;r++)for(const m of R[r])if(m.res&&(m.a===my||m.b===my)&&m.res.w!==my&&!(R.length>=2&&r===Math.log2(T.size)-2))return true;
+  if(T.third&&T.third.res&&(T.third.a===my||T.third.b===my))return true;
+  return false;
+}
+function showTourBracket(){
+  const T=tourT;if(!T||T.state!=='running')return;
+  showOnly('bracket');
+  const size=T.size,RN=Math.log2(size),R=tRounds(T),H=humansOf(T),my=tMine(),mt=myTourMatch(T);
+  const games=T.games||{};
+  let html='';
+  const box=(m,live)=>{if(!m)return`<div class="mb"><div class="tm"><span class="n" style="opacity:.35">—</span></div><div class="tm"><span class="n" style="opacity:.35">—</span></div></div>`;
+    const line=(t,sc)=>`<div class="tm ${m.res?(m.res.w===t?'w':'l'):''} ${t===my?'me':''}">${chip(t)}<span class="n">${tn(t)}${H[t]!=null&&t!==my?' 👤':''}</span><span class="sc">${m.res?sc:''}</span></div>`;
+    const isMine=mt&&mt.m===m;
+    return `<div class="mb ${isMine?'nx':''}" ${isMine?'id="nxm"':''}>${line(m.a,m.res?.sa)}${line(m.b,m.res?.sb)}${live&&!m.res?'<div style="font-size:9px;color:#f87171">● მიმდინარეობს</div>':''}</div>`;};
+  for(let r=0;r<RN;r++){
+    const cnt=size>>(r+1);let col='';
+    for(let i=0;i<cnt;i++){const m=R[r]&&R[r][i];col+=box(m,m&&games[`r${r}_${i}`]);}
+    if(r===RN-1){col=`<div style="font-size:10px;opacity:.7;text-align:center">🥇 ოქროსთვის</div>${col}<div style="font-size:10px;opacity:.7;text-align:center;margin-top:10px">🥉 მესამე ადგილისთვის</div>${box(T.third,games.third)}`;
+      html+=`<div class="col"><div class="colh">${roundName(size,r)}</div><div class="colb" style="justify-content:center;gap:6px;min-height:${Math.max(220,cnt*58)}px">${col}</div></div>`;}
+    else html+=`<div class="col"><div class="colh">${roundName(size,r)}</div><div class="colb" style="min-height:${Math.max(220,cnt*58)}px">${col}</div></div>`;
+  }
+  if(T.podium){const P=T.podium,row=(k,x)=>`<div class="tm ${x===my?'me':''}" style="font-size:13px"><span>${MED[k]}</span>${chip(x)}<span class="n"><b>${tn(x)}</b></span></div>`;
+    html+=`<div class="col"><div class="colh">მედლები</div><div class="colb" style="justify-content:center;min-height:220px"><div class="mb nx">${row('g',P.g)}${row('s',P.s)}${row('b',P.b)}</div></div></div>`;}
+  $('tree').innerHTML=html;
+  $('bTitle').textContent=T.podium?'ტურნირი დასრულდა':`🏟️ ტურნირი ${tour.code}`;
+  $('bSub').innerHTML=`შენი გუნდი: ${chip(my)} <b>${tn(my)}</b> · ${size} გუნდი · 👤 = მოთამაშე`;
+  const B=[];let lbl='';
+  if(T.podium){const P=T.podium,k=['g','s','b'].find(k=>P[k]===my);
+    lbl=k==='g'?'🥇 შენ გახდი ტურნირის ჩემპიონი!':k==='s'?'🥈 ვერცხლი — მეორე ადგილი!':k==='b'?'🥉 ბრინჯაო — მესამე ადგილი!':`🏆 ჩემპიონი: ${tn(P.g)}`;
+    B.push(['btn sm','🏠 მთავარი',()=>{leaveTour();showHome();}]);}
+  else if(mt){const opp=mt.m.a===my?mt.m.b:mt.m.a;
+    lbl=`${mt.key==='third'?'🥉 ბრინჯაოსთვის':mt.m===R[RN-1]?.[0]?'🥇 ფინალი':'შენი მატჩი'}: ${tn(mt.m.a)} — ${tn(mt.m.b)} ${H[opp]!=null?'(👤 მოთამაშე)':'(🤖 კომპიუტერი)'}`;
+    B.push(['btn sm','▶ თამაში',()=>startTourMatch(mt)]);}
+  else if(myTourOut(T)){lbl='გავარდი — ტურნირს თვალს ადევნებ აქ, ბადეზე.';B.push(['btn2','🏠 მთავარი',()=>{leaveTour();showHome();}]);}
+  else lbl='⏳ ელოდება სხვა მატჩების დასრულებას…';
+  $('actLbl').innerHTML=lbl;const bx=$('actBtns');bx.innerHTML='';
+  for(const [c,t,f] of B){const e=document.createElement('button');e.className=c;e.textContent=t;e.onclick=f;bx.appendChild(e);}
+}
+function startTourMatch(mt){
+  const T=tourT,H=humansOf(T),my=tMine(),opp=mt.m.a===my?mt.m.b:mt.m.a;
+  if(H[opp]==null){ // vs computer: local match, I am always shown as team A
+    swapped=mt.m.b===my;const A=my,B=opp;
+    cur={m:mt.m,A,B,kits:matchKits(TEAMS[A],TEAMS[B]),tour:{path:mt.path,a:mt.m.a,b:mt.m.b}};
+    rigs.kickA.setKit(cur.kits.ka);rigs.kickB.setKit(cur.kits.kb);rigs.gkA.setKit(cur.kits.ga);rigs.gkB.setKit(cur.kits.gb);
+    human='p';setHUDTeams(A,B);
+    for(const o of ovs)$(o).classList.add('hide');$('hud').style.visibility='visible';$('skip').style.display='none';
+    pRes=[];cRes=[];playerShots=[];turn='p';sfx.whistle(false);setupKick();return;
+  }
+  // vs another player: team a's device plans the kicks
+  const role=mt.m.a===my?'host':'guest';
+  online={kind:'tour',role,base:`${tour.base}/games/${mt.key}`,k:0,round:0,picked:false,pz:-1,started:false,ended:false,tour:{path:mt.path,a:mt.m.a,b:mt.m.b}};
+  NET.set(`${online.base}/in_${role}`,true);
+  online.unwatch=NET.watch(online.base,g=>{if(!online||online.kind!=='tour')return;online.game=g;processKicks(g&&g.m0);});
+  startOnlineMatch(mt.m.a,mt.m.b);
+  hint(turn===human?'🎯 შეეხე კარს — სად დაარტყამ?':'🧤 შენ მეკარე ხარ — სად გადახტები?');
+}
+function tourEndScreen(iWon,A,B,title){
+  state='over';renderHUD();sfx.whistle(true);if(iWon)cheer=4;
+  $('eicon').textContent=iWon?'🎉':'😔';$('etitle').textContent=title||(iWon?'გაიმარჯვე!':'წააგე');
+  $('eteams').innerHTML=`${chip(A)} ${tn(A)} — ${tn(B)} ${chip(B)}`;$('escore').textContent=`${sum(pRes)} : ${sum(cRes)}`;
+  const box=$('eBtns');box.innerHTML='';const e=document.createElement('button');e.className='btn sm';e.textContent='ბადეზე';e.onclick=()=>{cur=null;showTourBracket();};box.appendChild(e);
+  setTimeout(()=>$('end').classList.remove('hide'),500);
+}
+function finishTourCpu(){
+  const t=cur.tour,pr=swapped?cRes:pRes,cr=swapped?pRes:cRes,w=winnerOf(pr,cr);
+  const res={sa:sum(pr),sb:sum(cr),w:w==='p'?t.a:t.b};
+  NET.tx(`${tour.base}/${t.path}/res`,x=>x?undefined:res);
+  tourEndScreen(winnerOf(pRes,cRes)==='p',cur.A,cur.B);
+}
+function finishTourOnline(){
+  online.ended=true;const t=online.tour,w=winnerOf(pRes,cRes);
+  if(online.role==='host')NET.tx(`${tour.base}/${t.path}/res`,x=>x?undefined:{sa:sum(pRes),sb:sum(cRes),w:w==='p'?t.a:t.b});
+  const iWon=w===human,A=cur.A,B=cur.B;
+  try{online.unwatch&&online.unwatch();}catch(e){}online=null;
+  tourEndScreen(iWon,A,B);human=null;
 }
 function setTeams(){
   const pk=turn==='p';
@@ -985,7 +1328,7 @@ function winner(){return winnerOf(pRes,cRes);}
 function next(){
   if(winner()){online?finishOnline():finishMatch();return;}
   state='fade';$('fade').style.opacity=1;
-  setTimeout(()=>{turn=turn==='p'?'c':'p';if(online){online.k++;online.picked=false;online.pz=-1;}setupKick();$('fade').style.opacity=0;if(online)onRoom(online.room);},260);
+  setTimeout(()=>{turn=turn==='p'?'c':'p';if(online){online.k++;online.picked=false;online.pz=-1;}setupKick();$('fade').style.opacity=0;onlineRefresh();},260);
 }
 
 // ---------- input ----------
@@ -1098,12 +1441,12 @@ fetch('player.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBu
   HIPS_REST=rigs.kickA.hipsRest.clone();FY=rigs.kickA.footY;
   const k0=matchKits(TEAMS[0],TEAMS[6]);rigs.kickA.setKit(k0.ka);rigs.kickB.setKit(k0.kb);rigs.gkA.setKit(k0.ga);rigs.gkB.setKit(k0.gb);
   turn='p';setTeams();state='menu';
-  buildPick();
+  showHome();loadAccount();
   window.__ready=true;
-}).catch(e=>{$('pickSub').textContent='ჩატვირთვა ვერ მოხერხდა';console.error(e);});
-buildPick();
+}).catch(e=>{$('homeMsg').textContent='ჩატვირთვა ვერ მოხერხდა';console.error(e);});
+showHome();
 // test hooks
-window.__game0={forceMine(win){const m=nextMatch();const meA=m.a===TOUR.my;const W=[true,true,true,true,true],L=[false,false,false];record(m,(meA===win)?W:L,(meA===win)?L:W);showBracket();},skipMine(){skipUntilMine();showBracket();},pick:z=>onlinePick(z),get score(){return JSON.stringify([pRes,cRes,turn,online&&online.k])},step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
+window.__game={T:()=>tourT,auto(){if(state!=='aim'||!human)return;const z=Math.random()*6|0;if(online)onlinePick(z);else choose(z);},play(){const b=[...document.querySelectorAll('#actBtns button')].find(x=>x.textContent.includes('თამაში'));if(b&&!$('bracket').classList.contains('hide')){b.click();return 1;}return 0;},toBracket(){const b=document.querySelector('#eBtns button');if(b&&!$('end').classList.contains('hide')){b.click();return 1;}return 0;},forceMine(win){const m=nextMatch();const meA=m.a===TOUR.my;const W=[true,true,true,true,true],L=[false,false,false];record(m,(meA===win)?W:L,(meA===win)?L:W);showBracket();},skipMine(){skipUntilMine();showBracket();},pick:z=>onlinePick(z),get score(){return JSON.stringify([pRes,cRes,turn,online&&online.k])},step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
 </script>
 </body>
 </html>
