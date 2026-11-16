@@ -34,6 +34,7 @@
   .ov h1{font-size:34px;margin:0 0 6px;font-weight:900;line-height:1.15;text-shadow:0 4px 18px rgba(250,204,21,.35)}
   .ov .big{font-size:58px;margin-bottom:4px}
   .ov.top{justify-content:flex-start;padding:16px 12px 0;overflow-y:auto}
+  .ov.top>*{flex-shrink:0}
   .ov h2{font-size:22px;margin:4px 0 2px;font-weight:900}
   .sub{font-size:13px;opacity:.75;margin-bottom:12px}
   .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:380px;padding-bottom:20px}
@@ -55,6 +56,7 @@
   .btn2{font-family:inherit;font-size:14px;font-weight:800;color:#fff;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:10px 16px;cursor:pointer}
   .btn.sm{font-size:15px;padding:11px 24px}
   #skip{position:absolute;left:10px;bottom:72px;display:none}
+  .medh{font-weight:900;font-size:14px;margin:6px 0}.medt{border-collapse:collapse;font-size:13px;margin:0 auto}.medt td,.medt th{padding:4px 8px;text-align:center}.medt td:nth-child(2){text-align:left;white-space:nowrap}.medt .j{display:inline-block;width:10px;height:10px;border-radius:3px;vertical-align:-1px;margin-right:4px;box-shadow:inset 0 -3px 0 var(--c2)}.medt tr+tr td{border-top:1px solid rgba(255,255,255,.08)}
   .mode{opacity:.55}.mode.on{opacity:1;background:rgba(250,204,21,.25);border-color:#facc15}
   .ov p{font-size:14px;line-height:1.55;opacity:.85;max-width:300px;margin:8px 0 18px}
   .ov .fs{font-size:44px;font-weight:900;margin:4px 0 10px}
@@ -85,10 +87,20 @@
     <div class="big" style="font-size:44px">🏆</div>
     <h2>საქართველოს ჩემპიონატი</h2>
     <div class="row" style="margin:2px 0 10px"><button class="btn2 mode on" id="mChamp">🏆 ჩემპიონატი</button><button class="btn2 mode" id="mFriend">👥 მეგობართან</button></div>
+    <button class="btn2" id="medBtn" style="margin-bottom:10px">🏅 რეგიონების ტიტულები</button>
     <div class="sub" id="pickSub">იტვირთება…</div>
     <div class="grid" id="teamGrid"></div>
-    <div class="stats" id="stats"></div>
+    <div class="stats" id="stats" style="opacity:1;padding-bottom:10px"></div>
     <div style="font-size:10px;opacity:.45;padding-bottom:14px">3D მოდელი: „Football player“ — tomleeosborn, Sketchfab</div>
+  </div>
+  <div class="ov hide" id="medModal" style="z-index:5;background:rgba(0,0,0,.82)">
+    <div style="background:#0f1a33;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:16px 12px;width:100%;max-width:360px;max-height:88%;display:flex;flex-direction:column;position:relative">
+      <button class="btn2" id="medClose" style="position:absolute;right:10px;top:10px;padding:6px 11px">✕</button>
+      <h2 style="margin:2px 0 10px">🏅 ტიტულები</h2>
+      <div class="row" style="margin-bottom:10px"><button class="btn2 mode on" id="tAll">🌍 ყველა მოთამაშე</button><button class="btn2 mode" id="tMine">👤 ჩემი</button></div>
+      <div id="medBody" style="overflow-y:auto;flex:1"></div>
+      <div id="medNote" style="font-size:11px;opacity:.55;margin-top:8px"></div>
+    </div>
   </div>
   <div class="ov hide" id="friend">
     <div class="big" style="font-size:44px">👥</div>
@@ -627,25 +639,60 @@ function matchKits(A,B){
 let TOUR=null,human=null,cur=null,swapped=false,aimT=0;
 function loadCup(){try{return JSON.parse(localStorage.getItem('pen_cup'))||{titles:0,played:0};}catch(e){return{titles:0,played:0};}}
 function saveCup(c){try{localStorage.setItem('pen_cup',JSON.stringify(c));}catch(e){}}
-function showStats(){const c=loadCup();const t=c.played?`ტურნირები: ${c.played} · ჩემპიონობა: ${c.titles} 🏆`:'';$('stats').textContent=t;$('stats2').textContent='';}
-showStats();
+// medals are stored ONLY for the region the player controlled
+function loadMedals(){try{return JSON.parse(localStorage.getItem('pen_medals'))||{};}catch(e){return{};}}
+function addMedal(team,kind){const m=loadMedals();m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]++;try{localStorage.setItem('pen_medals',JSON.stringify(m));}catch(e){}}
+const MED={g:'🥇',s:'🥈',b:'🥉'};
+function medalStr(x){return x?['g','s','b'].filter(k=>x[k]).map(k=>MED[k]+(x[k]>1?x[k]:'')).join(' '):'';}
+function showStats(){const c=loadCup();$('stats').innerHTML=c.played?`<div style="opacity:.55">ნათამაშები ტურნირები: ${c.played}</div>`:'';$('stats2').textContent='';}
+function medalTable(m,emptyMsg){
+  const rows=[...Array(16).keys()].map(i=>({i,g:+(m[i]?.g||0),s:+(m[i]?.s||0),b:+(m[i]?.b||0)}))
+    .sort((x,y)=>(y.g-x.g)||(y.s-x.s)||(y.b-x.b)||(tn(x.i).localeCompare(tn(y.i))));
+  const any=rows.some(r=>r.g+r.s+r.b);
+  return (any?'':`<div style="opacity:.6;font-size:13px;margin-bottom:8px">${emptyMsg}</div>`)+
+   `<table class="medt"><tr><th>#</th><th style="text-align:left">რეგიონი</th><th>🥇</th><th>🥈</th><th>🥉</th></tr>`+
+   rows.map((r,n)=>`<tr ${r.i===myTeamHL?'style="color:#facc15"':''}><td style="opacity:.55">${n+1}</td><td>${chip(r.i)} ${tn(r.i)}</td><td>${r.g||'·'}</td><td>${r.s||'·'}</td><td>${r.b||'·'}</td></tr>`).join('')+`</table>`;
+}
+let medTab='all',myTeamHL=-1;
+async function openMedals(tab){
+  medTab=tab||medTab;$('medModal').classList.remove('hide');
+  $('tAll').classList.toggle('on',medTab==='all');$('tMine').classList.toggle('on',medTab==='mine');
+  const box=$('medBody');
+  if(medTab==='mine'){box.innerHTML=medalTable(loadMedals(),'შენ ჯერ მედალი არ მოგიგია — მოიგე ტურნირი!');$('medNote').textContent='შენი მედლები ამ მოწყობილობაზე.';return;}
+  box.innerHTML='<div style="opacity:.7;padding:20px">იტვირთება…</div>';$('medNote').textContent='ყველა მოთამაშის მიერ მოპოვებული მედლები.';
+  try{const n=await getNet();const m=await n.getMedals();if(medTab==='all')box.innerHTML=medalTable(m,'ჯერ არავის მოუგია მედალი — იყავი პირველი!');}
+  catch(e){if(medTab==='all')box.innerHTML=`<div style="opacity:.75;padding:16px;font-size:13px">საერთო ცხრილი ხელმისაწვდომია მხოლოდ ონლაინ ვერსიაში (ghvedashvili.github.io/game).</div>`;}
+}
+$('medBtn').onclick=()=>openMedals('all');$('tAll').onclick=()=>openMedals('all');$('tMine').onclick=()=>openMedals('mine');
+$('medClose').onclick=()=>$('medModal').classList.add('hide');
+
 function buildPick(){
-  $('teamGrid').innerHTML=TEAMS.map((t,i)=>`<button class="tbtn" data-i="${i}" ${rigs?'':'disabled'}><span class="jer" style="background:${t.c1};--c2:${t.c2}"></span>${t.name}</button>`).join('');
+  const md=loadMedals();
+  $('teamGrid').innerHTML=TEAMS.map((t,i)=>`<button class="tbtn" data-i="${i}" ${rigs?'':'disabled'}><span class="jer" style="background:${t.c1};--c2:${t.c2}"></span><span style="flex:1">${t.name}</span><span style="font-size:11px">${medalStr(md[i])}</span></button>`).join('');
+  showStats();
   $('pickSub').textContent=rigs?'აირჩიე შენი რეგიონი':'იტვირთება…';
   $('teamGrid').querySelectorAll('.tbtn').forEach(b=>b.onclick=()=>{ac();ambience();if(pickMode==='friend')showFriend(+b.dataset.i);else newTournament(+b.dataset.i);});
 }
 function newTournament(my){
+  myTeamHL=my;
   const ids=[...Array(16).keys()].sort(()=>Math.random()-.5);
   const r0=[];for(let i=0;i<8;i++)r0.push({a:ids[i*2],b:ids[i*2+1],res:null});
-  TOUR={my,rounds:[r0],out:false,champ:null};
+  TOUR={my,rounds:[r0],out:false,champ:null,third:null,podium:null};
   const c=loadCup();c.played++;saveCup(c);
   $('pick').classList.add('hide');showBracket();
 }
-function nextMatch(){if(!TOUR||TOUR.champ!=null)return null;const r=TOUR.rounds[TOUR.rounds.length-1];const m=r.find(x=>!x.res);return m||null;}
+function nextMatch(){if(!TOUR||TOUR.champ!=null)return null;if(TOUR.third&&!TOUR.third.res)return TOUR.third;const r=TOUR.rounds[TOUR.rounds.length-1];const m=r.find(x=>!x.res);return m||null;}
+const loser=m=>m.res.w===m.a?m.b:m.a;
 function advance(){
   const r=TOUR.rounds[TOUR.rounds.length-1];if(r.some(x=>!x.res))return;
-  if(r.length===1){TOUR.champ=r[0].res.w;const c=loadCup();if(TOUR.champ===TOUR.my){c.titles++;saveCup(c);}return;}
+  if(r.length===1){
+    if(TOUR.third&&!TOUR.third.res)return;
+    const f=r[0];TOUR.champ=f.res.w;TOUR.podium={g:f.res.w,s:loser(f),b:TOUR.third.res.w};
+    for(const k of['g','s','b'])if(TOUR.podium[k]===TOUR.my){addMedal(TOUR.my,k);getNet().then(n=>n.addMedal(TOUR.my,k)).catch(()=>{});}
+    return;
+  }
   const n=[];for(let i=0;i<r.length;i+=2)n.push({a:r[i].res.w,b:r[i+1].res.w,res:null});TOUR.rounds.push(n);
+  if(r.length===2)TOUR.third={a:loser(r[0]),b:loser(r[1]),res:null,third:true};
 }
 function winnerOf(pr,cr){const ps=sum(pr),cs=sum(cr),pk=pr.length,ck=cr.length;
   if(pk<=5&&ck<=5){if(ps>cs+(5-ck))return'p';if(cs>ps+(5-pk))return'c';}
@@ -653,7 +700,8 @@ function winnerOf(pr,cr){const ps=sum(pr),cs=sum(cr),pk=pr.length,ck=cr.length;
 function simulate(pr=[],cr=[]){pr=[...pr];cr=[...cr];while(!winnerOf(pr,cr)){if(pr.length===cr.length)pr.push(Math.random()<.75);else cr.push(Math.random()<.75);}return{pr,cr};}
 function record(m,pr,cr){ // pr/cr belong to m.a/m.b
   const w=winnerOf(pr,cr);m.res={sa:sum(pr),sb:sum(cr),w:w==='p'?m.a:m.b};
-  if(m.res.w!==TOUR.my&&(m.a===TOUR.my||m.b===TOUR.my))TOUR.out=true;
+  const mine=m.a===TOUR.my||m.b===TOUR.my,isSemi=TOUR.rounds[2]&&TOUR.rounds[2].includes(m);
+  if(mine&&(m.third||(m.res.w!==TOUR.my&&!isSemi)))TOUR.out=true; // a semi-final loser still plays for bronze
   advance();
 }
 function skipOne(){const m=nextMatch();if(!m)return;const r=simulate();record(m,r.pr,r.cr);}
@@ -671,20 +719,29 @@ function showBracket(){
       const line=(t,sc)=>`<div class="tm ${m.res?(m.res.w===t?'w':'l'):''} ${t===TOUR.my?'me':''}">${chip(t)}<span class="n">${tn(t)}</span><span class="sc">${m.res?sc:''}</span></div>`;
       col+=`<div class="mb ${m===nx?'nx':''}" ${m===nx?'id="nxm"':''}>${line(m.a,m.res?.sa)}${line(m.b,m.res?.sb)}</div>`;
     }
-    html+=`<div class="col"><div class="colh">${ROUNDS[r]}</div><div class="colb">${col}</div></div>`;
+    if(r===3){
+      const t=TOUR.third;let tc;
+      if(!t)tc=`<div class="mb"><div class="tm"><span class="n" style="opacity:.35">—</span></div><div class="tm"><span class="n" style="opacity:.35">—</span></div></div>`;
+      else{const line=(x,sc)=>`<div class="tm ${t.res?(t.res.w===x?'w':'l'):''} ${x===TOUR.my?'me':''}">${chip(x)}<span class="n">${tn(x)}</span><span class="sc">${t.res?sc:''}</span></div>`;
+        tc=`<div class="mb ${t===nx?'nx':''}" ${t===nx?'id="nxm"':''}>${line(t.a,t.res?.sa)}${line(t.b,t.res?.sb)}</div>`;}
+      col=`<div style="font-size:10px;opacity:.7;text-align:center">🥇 ოქროსთვის</div>${col}<div style="font-size:10px;opacity:.7;text-align:center;margin-top:10px">🥉 მესამე ადგილისთვის</div>${tc}`;
+      html+=`<div class="col"><div class="colh">${ROUNDS[r]}</div><div class="colb" style="justify-content:center;gap:6px">${col}</div></div>`;
+    }else html+=`<div class="col"><div class="colh">${ROUNDS[r]}</div><div class="colb">${col}</div></div>`;
   }
-  if(TOUR.champ!=null)html+=`<div class="col"><div class="colh">ჩემპიონი</div><div class="colb"><div class="mb nx" style="text-align:center;font-size:13px">🏆<br><b>${tn(TOUR.champ)}</b></div></div></div>`;
+  if(TOUR.podium){const P=TOUR.podium,row=(k,x)=>`<div class="tm ${x===TOUR.my?'me':''}" style="font-size:13px"><span>${MED[k]}</span>${chip(x)}<span class="n"><b>${tn(x)}</b></span></div>`;
+    html+=`<div class="col"><div class="colh">მედლები</div><div class="colb" style="justify-content:center"><div class="mb nx">${row('g',P.g)}${row('s',P.s)}${row('b',P.b)}</div></div></div>`;}
   $('tree').innerHTML=html;
-  const cr=TOUR.rounds.length-1;$('bTitle').textContent=TOUR.champ!=null?'ტურნირი დასრულდა':ROUNDS[cr];
-  $('bSub').innerHTML=`შენი გუნდი: ${chip(TOUR.my)} <b>${tn(TOUR.my)}</b>${TOUR.out?' — გავარდა':''}`;
+  const cr=TOUR.rounds.length-1;$('bTitle').textContent=TOUR.champ!=null?'ტურნირი დასრულდა':(nx&&nx.third?'მატჩი მესამე ადგილისთვის':ROUNDS[cr]);
+  const myMed=TOUR.podium?['g','s','b'].find(k=>TOUR.podium[k]===TOUR.my):null;
+  $('bSub').innerHTML=`შენი გუნდი: ${chip(TOUR.my)} <b>${tn(TOUR.my)}</b>${myMed?' '+MED[myMed]:TOUR.out?' — გავარდა':''}`;
   const B=[];let lbl='';
   if(TOUR.champ!=null){
-    lbl=TOUR.champ===TOUR.my?'🏆 შენ გახდი საქართველოს ჩემპიონი!':`🏆 ჩემპიონი: ${tn(TOUR.champ)}`;
+    const P=TOUR.podium;lbl=P.g===TOUR.my?'🥇 შენ გახდი საქართველოს ჩემპიონი!':P.s===TOUR.my?'🥈 ვერცხლი — მეორე ადგილი!':P.b===TOUR.my?'🥉 ბრინჯაო — მესამე ადგილი!':`🏆 ჩემპიონი: ${tn(P.g)}`;
     B.push(['btn sm','ახალი ტურნირი',()=>{$('bracket').classList.add('hide');buildPick();$('pick').classList.remove('hide');showStats();}]);
   }else if(!TOUR.out&&(nx.a===TOUR.my||nx.b===TOUR.my)){
-    lbl=`შენი მატჩი: ${tn(nx.a)} — ${tn(nx.b)}`;B.push(['btn sm','▶ თამაში',()=>startMatch(nx,true)]);
+    lbl=`${nx.third?'🥉 ბრინჯაოსთვის: ':nx===TOUR.rounds[3]?.[0]?'🥇 ფინალი: ':'შენი მატჩი: '}${tn(nx.a)} — ${tn(nx.b)}`;B.push(['btn sm','▶ თამაში',()=>startMatch(nx,true)]);
   }else{
-    lbl=`შემდეგი მატჩი: ${tn(nx.a)} — ${tn(nx.b)}`;
+    lbl=`${nx.third?'🥉 მესამე ადგილისთვის: ':nx===TOUR.rounds[3]?.[0]?'🥇 ფინალი: ':'შემდეგი მატჩი: '}${tn(nx.a)} — ${tn(nx.b)}`;
     B.push(['btn sm','👀 ყურება',()=>startMatch(nx,false)],['btn2','⏭ გამოტოვება',()=>{skipOne();showBracket();}]);
     if(!TOUR.out)B.push(['btn2','⏩ ჩემს მატჩამდე',()=>{skipUntilMine();showBracket();}]);
     else B.push(['btn2','⏩ ბოლომდე',()=>{while(nextMatch())skipOne();showBracket();}]);
@@ -708,11 +765,15 @@ function startMatch(m,mine){
 }
 function finishMatch(){
   const pr=swapped?cRes:pRes,cr=swapped?pRes:cRes;record(cur.m,pr,cr);
-  const wA=winnerOf(pRes,cRes)==='p',wTeam=wA?cur.A:cur.B,isFinal=cur.m===TOUR.rounds[3]?.[0];
+  const wA=winnerOf(pRes,cRes)==='p',wTeam=wA?cur.A:cur.B,isFinal=cur.m===TOUR.rounds[3]?.[0],isThird=!!cur.m.third;
   state='over';renderHUD();sfx.whistle(true);$('skip').style.display='none';
   let icon,title;
-  if(human){icon=wA?(isFinal?'🏆':'🎉'):'😔';title=wA?(isFinal?'შენ ჩემპიონი ხარ!':'გაიმარჯვე!'):'წააგე';if(wA)cheer=4;}
-  else{icon=isFinal?'🏆':'⚽';title=isFinal?`${tn(wTeam)} — ჩემპიონი!`:`${tn(wTeam)} გადის`;cheer=2;}
+  if(human){
+    if(isFinal){icon=wA?'🥇':'🥈';title=wA?'შენ ჩემპიონი ხარ!':'ვერცხლი! მეორე ადგილი';}
+    else if(isThird){icon=wA?'🥉':'😔';title=wA?'ბრინჯაო! მესამე ადგილი':'მეოთხე ადგილი';}
+    else{icon=wA?'🎉':'😔';title=wA?'გაიმარჯვე!':(TOUR.rounds[2]&&TOUR.rounds[2].includes(cur.m)?'წააგე — ბრინჯაოსთვის ითამაშებ':'წააგე');}
+    if(wA)cheer=4;}
+  else{icon=isFinal?'🥇':isThird?'🥉':'⚽';title=isFinal?`${tn(wTeam)} — ჩემპიონი!`:isThird?`${tn(wTeam)} — ბრინჯაო`:`${tn(wTeam)} გადის`;cheer=2;}
   $('eicon').textContent=icon;$('etitle').textContent=title;
   $('eteams').innerHTML=`${chip(cur.A)} ${tn(cur.A)} — ${tn(cur.B)} ${chip(cur.B)}`;
   $('escore').textContent=`${sum(pRes)} : ${sum(cRes)}`;
@@ -738,7 +799,9 @@ const MockNet={
   async join(c,g){const r=this.read(c);if(!r||r.guest)return false;r.guest=g;r.state='playing';this.put(c,r);return true;},
   watch(c,f){(this.ls[c]=this.ls[c]||[]).push(f);setTimeout(()=>f(this.read(c)));return()=>{this.ls[c]=(this.ls[c]||[]).filter(x=>x!==f);};},
   async set(c,path,v){const r=this.read(c);if(!r)return;setPath(r,path,v);this.put(c,r);},
-  async leave(c,role){if(role==='host')this.put(c,null);else await this.set(c,'guest/online',false);}
+  async leave(c,role){if(role==='host')this.put(c,null);else await this.set(c,'guest/online',false);},
+  async addMedal(t,k){const m=JSON.parse(localStorage.getItem('mock_medals')||'{}');m[t]=m[t]||{};m[t][k]=(m[t][k]||0)+1;localStorage.setItem('mock_medals',JSON.stringify(m));},
+  async getMedals(){return JSON.parse(localStorage.getItem('mock_medals')||'{}');}
 };
 // Firebase Realtime Database backend (config in firebase-config.js)
 const FireNet={
@@ -762,7 +825,9 @@ const FireNet={
     if(ok)this.f.onDisconnect(this.r(c,'guest/online')).set(false);return ok;},
   watch(c,f){return this.f.onValue(this.r(c),s=>f(s.val()));},
   async set(c,path,v){await this.f.set(this.r(c,path),v);},
-  async leave(c,role){if(role==='host')await this.f.remove(this.r(c));else await this.f.set(this.r(c,'guest/online'),false);}
+  async leave(c,role){if(role==='host')await this.f.remove(this.r(c));else await this.f.set(this.r(c,'guest/online'),false);},
+  async addMedal(t,k){const r=this.f.ref(this.db,`medals/${t}/${k}`);await this.f.get(r);await this.f.runTransaction(r,v=>(v||0)+1);},
+  async getMedals(){return (await this.f.get(this.f.ref(this.db,'medals'))).val()||{};}
 };
 async function getNet(){
   if(NET)return NET;const n=qs.has('mock')?MockNet:FireNet;await n.init();NET=n;return n;
@@ -1038,7 +1103,7 @@ fetch('player.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBu
 }).catch(e=>{$('pickSub').textContent='ჩატვირთვა ვერ მოხერხდა';console.error(e);});
 buildPick();
 // test hooks
-window.__game={pick:z=>onlinePick(z),step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
+window.__game0={forceMine(win){const m=nextMatch();const meA=m.a===TOUR.my;const W=[true,true,true,true,true],L=[false,false,false];record(m,(meA===win)?W:L,(meA===win)?L:W);showBracket();},skipMine(){skipUntilMine();showBracket();},pick:z=>onlinePick(z),get score(){return JSON.stringify([pRes,cRes,turn,online&&online.k])},step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
 </script>
 </body>
 </html>
