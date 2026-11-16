@@ -752,8 +752,14 @@ const FireNet={
   r(c,p){return this.f.ref(this.db,'rooms/'+c+(p?'/'+p:''));},
   async exists(c){return (await this.f.get(this.r(c))).exists();},
   async create(c,o){await this.f.set(this.r(c),o);this.f.onDisconnect(this.r(c)).remove();},
-  async join(c,g){const res=await this.f.runTransaction(this.r(c),r=>{if(!r||r.guest)return;r.guest=g;r.state='playing';return r;});
-    if(res.committed)this.f.onDisconnect(this.r(c,'guest/online')).set(false);return res.committed;},
+  async join(c,g){
+    // read first so the transaction starts from the server value, not an empty local cache
+    const snap=await this.f.get(this.r(c));const cur=snap.val();
+    if(!cur||cur.guest)return false;
+    const tag=Math.random().toString(36).slice(2);g={...g,tag};
+    const res=await this.f.runTransaction(this.r(c),r=>{if(r===null)return null;if(r.guest)return;r.guest=g;r.state='playing';return r;});
+    const v=res.snapshot&&res.snapshot.val();const ok=!!(res.committed&&v&&v.guest&&v.guest.tag===tag);
+    if(ok)this.f.onDisconnect(this.r(c,'guest/online')).set(false);return ok;},
   watch(c,f){return this.f.onValue(this.r(c),s=>f(s.val()));},
   async set(c,path,v){await this.f.set(this.r(c,path),v);},
   async leave(c,role){if(role==='host')await this.f.remove(this.r(c));else await this.f.set(this.r(c,'guest/online'),false);}
@@ -770,8 +776,10 @@ function showFriend(team){
 async function netOrError(){try{return await getNet();}catch(e){fMsg(e.message==='noconfig'?'ონლაინ თამაში ჯერ არ არის ჩართული (Firebase-ის პარამეტრები აკლია).':'კავშირი ვერ დამყარდა. შეამოწმე ინტერნეტი.');return null;}}
 $('fCreate').onclick=async()=>{
   const n=await netOrError();if(!n)return;
-  let code;for(let i=0;i<8;i++){code=String(1000+Math.floor(Math.random()*9000));if(!(await n.exists(code)))break;}
-  await n.create(code,{v:1,state:'waiting',created:Date.now(),host:{team:myTeamF,online:true},guest:null});
+  let code;
+  try{for(let i=0;i<8;i++){code=String(1000+Math.floor(Math.random()*9000));if(!(await n.exists(code)))break;}
+    await n.create(code,{v:1,state:'waiting',created:Date.now(),host:{team:myTeamF,online:true},guest:null});}
+  catch(e){console.error(e);fMsg(/permission/i.test(e.message)?'ბაზამ წვდომა უარყო — შეამოწმე Rules და Anonymous შესვლა.':'შეცდომა: '+e.message);return;}
   online={role:'host',code,k:0,round:0,picked:false,pz:-1,started:false,ended:false,rm:0,room:null};
   $('fMain').style.display='none';$('fWait').style.display='flex';$('fBig').textContent=code;fMsg('');
   online.unwatch=n.watch(code,onRoom);
@@ -779,7 +787,7 @@ $('fCreate').onclick=async()=>{
 $('fJoin').onclick=async()=>{
   const code=$('fCode').value.trim();if(!/^\d{4}$/.test(code)){fMsg('ჩაწერე 4-ციფრიანი კოდი');return;}
   const n=await netOrError();if(!n)return;
-  const ok=await n.join(code,{team:myTeamF,online:true});
+  let ok=false;try{ok=await n.join(code,{team:myTeamF,online:true});}catch(e){console.error(e);fMsg(/permission/i.test(e.message)?'ბაზამ წვდომა უარყო — შეამოწმე Rules და Anonymous შესვლა.':'შეცდომა: '+e.message);return;}
   if(!ok){fMsg('მატჩი ვერ მოიძებნა ან უკვე დაწყებულია');return;}
   online={role:'guest',code,k:0,round:0,picked:false,pz:-1,started:false,ended:false,rm:0,room:null};
   online.unwatch=n.watch(code,onRoom);
