@@ -648,12 +648,74 @@ function unlockAudio(){
     ambience();}
 }
 ['pointerdown','touchend','click','keydown'].forEach(ev=>addEventListener(ev,unlockAudio,{capture:true,passive:true}));
-function ambience(){const a=ac();if(!a||amb)return;const s=a.createBufferSource();s.buffer=nbuf(a);s.loop=true;const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=700;f.Q.value=.5;const g=a.createGain();g.gain.value=.06;s.connect(f).connect(g).connect(master);s.start();amb=s;}
+// ---------- synthesized stadium crowd (many "voices": pitched pulse trains through vowel formants) ----------
+const VOW=[[730,1090,2440],[530,1840,2480],[570,840,2410],[300,870,2240],[660,1720,2410]];
+function bpCoef(f,Q,sr){const w=2*Math.PI*f/sr,al=Math.sin(w)/(2*Q),a0=1+al;return[al/a0,0,-al/a0,-2*Math.cos(w)/a0,(1-al)/a0];}
+function makeCrowd(a,sec,nv,o){
+  o=o||{};const sr=22050,N=Math.floor(sec*sr),L=new Float32Array(N),R=new Float32Array(N);
+  const ex=o.excite||0,vow=o.vowel;
+  for(let v=0;v<nv;v++){
+    const male=Math.random()<.75,f0b=(male?105:200)*(1+Math.random()*.35)*(1+ex*.45);
+    const pan=Math.random(),gl=Math.cos(pan*Math.PI/2),gr=Math.sin(pan*Math.PI/2);
+    let ph=Math.random(),amp=0,tgt=0,nextSyl=0,F=null,st=[0,0,0,0,0,0],vib=Math.random()*6;
+    const dist=.35+Math.random()*.65; // far voices are quieter
+    for(let i=0;i<N;i++){
+      if(i>=nextSyl){
+        const talk=ex>0?(.65+Math.random()*.35):(Math.random()<.55?Math.random():0);
+        tgt=talk*dist;nextSyl=i+Math.floor(sr*(ex>0?.25+Math.random()*.6:.09+Math.random()*.22));
+        const V=vow!=null?VOW[vow]:VOW[Math.random()*VOW.length|0];
+        F=[bpCoef(V[0],5,sr),bpCoef(V[1],7,sr),bpCoef(V[2],9,sr)];
+      }
+      amp+=(tgt-amp)*.0025;
+      const f0=f0b*(1+.02*Math.sin(vib+i/sr*5.5)+(ex>0?.15*(i/N):0));
+      ph+=f0/sr;if(ph>=1)ph-=1;
+      const src=(ph<.12?1-ph/.12:0)*1.6-.2+(Math.random()-.5)*.35; // glottal-ish pulse + breath
+      let y=0;
+      for(let k=0;k<3;k++){const c=F[k],x1=st[k*2],x2=st[k*2+1];
+        // transposed direct form II
+        const out=c[0]*src+x1;st[k*2]=c[1]*src-c[3]*out+x2;st[k*2+1]=c[2]*src-c[4]*out;y+=out*(k===0?1:k===1?.7:.25);}
+      const sm=y*amp;L[i]+=sm*gl;R[i]+=sm*gr;
+    }
+  }
+  // distant-hall smoothing + low rumble, then normalise and make the loop seamless
+  let lp=0,lr=0,br=0;const k=Math.exp(-2*Math.PI*2600/sr);
+  for(let i=0;i<N;i++){br=(br+.02*(Math.random()-.5))*.995;lp=lp*k+(1-k)*L[i];lr=lr*k+(1-k)*R[i];L[i]=lp+br*.6;R[i]=lr+br*.6;}
+  let m=1e-6;for(let i=0;i<N;i++)m=Math.max(m,Math.abs(L[i]),Math.abs(R[i]));
+  const X=Math.floor(sr*(o.xf||0));
+  for(let i=0;i<N;i++){L[i]/=m;R[i]/=m;}
+  if(X){for(let i=0;i<X;i++){const t=i/X;L[i]=L[i]*t+L[N-X+i]*(1-t);R[i]=R[i]*t+R[N-X+i]*(1-t);}}
+  return{L:L.subarray(0,X?N-X:N),R:R.subarray(0,X?N-X:N),sr};
+}
+function toBuf(a,r){const b=a.createBuffer(2,r.L.length,r.sr);b.copyToChannel(r.L,0);b.copyToChannel(r.R,1);return b;}
+let CROWD=null,ambGain=null;
+// raw crowd audio is computed during loading, a piece at a time, so the first tap never stalls
+const CROWD_RAW={};const CROWD_SPEC={calm:[8,55,{xf:1.2}],roar:[3.4,80,{excite:1,vowel:0}],ooh:[2.4,60,{excite:.4,vowel:2}]};
+function rawCrowd(k){if(!CROWD_RAW[k]){const[sec,nv,o]=CROWD_SPEC[k];CROWD_RAW[k]=makeCrowd(null,sec,nv,o);}return CROWD_RAW[k];}
+['calm','roar','ooh'].forEach((k,i)=>setTimeout(()=>rawCrowd(k),1500+i*700));
+function crowdBufs(a){if(!CROWD)CROWD={calm:toBuf(a,rawCrowd('calm')),roar:toBuf(a,rawCrowd('roar')),ooh:toBuf(a,rawCrowd('ooh'))};return CROWD;}
+function playBuf(buf,vol,att,dur,rate,lpf){const a=ac();if(!a)return;const t=a.currentTime,s=a.createBufferSource();s.buffer=buf;s.playbackRate.value=rate||1;
+  const g=a.createGain();g.gain.setValueAtTime(.0001,t);g.gain.linearRampToValueAtTime(vol,t+att);g.gain.setValueAtTime(vol,t+dur*.45);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  let n=s;if(lpf){const f=a.createBiquadFilter();f.type='lowpass';f.frequency.value=lpf;n.connect(f);n=f;}n.connect(g).connect(master);s.start(t);s.stop(t+dur+.05);}
+function clapBurst(t,vol){const a=ac();for(let j=0;j<40;j++){const s=a.createBufferSource();s.buffer=nbuf(a);const f=a.createBiquadFilter();f.type='bandpass';f.frequency.value=1100+Math.random()*1400;f.Q.value=1.4;
+  const g=a.createGain(),tt=t+Math.random()*.045;g.gain.setValueAtTime(.0001,tt);g.gain.linearRampToValueAtTime(vol*(.4+Math.random()*.6)/12,tt+.003);g.gain.exponentialRampToValueAtTime(.0001,tt+.07);
+  s.connect(f).connect(g).connect(master);s.start(tt,Math.random()*2);s.stop(tt+.09);}}
+function drum(t,vol){const a=ac(),o=a.createOscillator(),g=a.createGain();o.frequency.setValueAtTime(95,t);o.frequency.exponentialRampToValueAtTime(48,t+.25);
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.0001,t+.35);o.connect(g).connect(master);o.start(t);o.stop(t+.4);}
+// chant: drum + "clap clap — clap clap clap" pattern, a few times
+function chant(){const a=ac();if(!a||muted)return;let t=a.currentTime+.05;const beat=.36;
+  for(let rep=0;rep<4;rep++){for(const d of[0,1,2.5,3,3.5]){clapBurst(t+d*beat,.5);drum(t+d*beat,.22);}t+=5*beat;}}
+function ambience(){const a=ac();if(!a||amb)return;
+  const B=crowdBufs(a);const s=a.createBufferSource();s.buffer=B.calm;s.loop=true;
+  ambGain=a.createGain();ambGain.gain.value=.22;s.connect(ambGain).connect(master);s.start();amb=s;
+  // slow swell of the crowd + an occasional chant
+  setInterval(()=>{if(!ambGain)return;const t=a.currentTime;ambGain.gain.cancelScheduledValues(t);ambGain.gain.setTargetAtTime(.16+Math.random()*.12,t,1.5);},4000);
+  const loopChant=()=>{setTimeout(()=>{if(state==='aim'||state==='menu')chant();loopChant();},18000+Math.random()*22000);};loopChant();
+}
 const sfx={
   kick(){tone(150,.18,'sine',.8,45);noise(.07,.4,1600,1,.002);},
   whistle(long){const a=ac();if(!a)return;const t=a.currentTime,dur=long?.9:.4;const o=a.createOscillator(),l=a.createOscillator(),lg=a.createGain(),g=a.createGain();o.frequency.value=2750;l.frequency.value=28;lg.gain.value=140;l.connect(lg).connect(o.frequency);g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.16,t+.02);g.gain.setValueAtTime(.16,t+dur-.05);g.gain.linearRampToValueAtTime(0,t+dur);o.connect(g).connect(master);o.start(t);l.start(t);o.stop(t+dur);l.stop(t+dur);},
-  cheer(){noise(2.6,.55,1000,.4,.12);noise(2.2,.25,2600,.8,.2);},
-  groan(){noise(1.4,.4,330,.7,.15);},
+  cheer(){const a=ac();if(!a)return;const B=crowdBufs(a);playBuf(B.roar,.9,.12,3.3);setTimeout(()=>{if(ac())chant();},2200);},
+  groan(){const a=ac();if(!a)return;const B=crowdBufs(a);playBuf(B.ooh,.65,.15,2.3,.85,900);},
   post(){tone(1250,.8,'triangle',.3);tone(1870,.5,'sine',.12);},
   save(){noise(.12,.45,700,1,.002);tone(110,.15,'sine',.4,60);},
   net(){noise(.35,.3,450,.6,.01);},
