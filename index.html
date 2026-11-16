@@ -10,7 +10,7 @@
   body{display:flex;align-items:center;justify-content:center}
   #wrap{position:relative;width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#070d1f}
   canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:pointer}
-  #hud{position:absolute;top:8px;left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 16px));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:6px;background:rgba(5,12,28,.72);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:7px 10px;backdrop-filter:blur(4px);pointer-events:none}
+  #hud{position:absolute;top:8px;left:8px;right:54px;max-width:560px;margin:0 auto;box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:6px;background:rgba(5,12,28,.72);border:1px solid rgba(255,255,255,.12);border-radius:14px;padding:7px 10px;backdrop-filter:blur(4px);pointer-events:none}
   .team{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
   .team.r{align-items:flex-end}
   .nm{font-size:12px;font-weight:700;opacity:.75;display:flex;align-items:center;gap:5px}
@@ -24,7 +24,7 @@
   .score{font-size:26px;font-weight:900;letter-spacing:1px;line-height:1}
   .sd{font-size:9px;color:#facc15;font-weight:700;white-space:nowrap;margin-top:2px;min-height:11px}
   #hint{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);background:rgba(0,0,0,.6);padding:9px 16px;border-radius:999px;font-size:14px;font-weight:700;white-space:nowrap;pointer-events:none;transition:opacity .25s}
-  #mute{position:absolute;right:max(10px,calc(50% - 280px));bottom:72px;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;font-size:17px;cursor:pointer}
+  #mute{position:absolute;right:8px;top:8px;z-index:20;width:38px;height:38px;border-radius:50%;border:none;background:rgba(0,0,0,.5);color:#fff;font-size:17px;cursor:pointer}
   #banner{position:absolute;left:0;right:0;top:19%;text-align:center;font-size:46px;font-weight:900;pointer-events:none;opacity:0;text-shadow:0 4px 0 rgba(0,0,0,.45),0 0 24px rgba(0,0,0,.6)}
   #banner.show{animation:pop 2.1s ease-out forwards}
   @keyframes pop{0%{opacity:0;transform:scale(.4)}12%{opacity:1;transform:scale(1.12)}20%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1)}}
@@ -71,6 +71,9 @@
   .plist{width:100%;max-width:320px;text-align:left;font-size:14px}.plist div{padding:7px 10px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:8px}
   .plist .j{width:12px;height:12px;border-radius:3px;box-shadow:inset 0 -4px 0 var(--c2)}
   .tbtn.taken{opacity:.35;pointer-events:none}
+  .achs{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:10px 12px;margin-bottom:10px}
+  .achs h3{margin:0 0 8px;font-size:15px}.achg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;text-align:center}
+  .achg div{background:rgba(255,255,255,.05);border-radius:8px;padding:6px 2px}.achg b{display:block;font-size:20px}.achg small{font-size:11px;opacity:.65}
   .stats{font-size:12px;opacity:.6;margin-top:18px;min-height:14px}
 </style>
 <script src="firebase-config.js"></script>
@@ -92,7 +95,7 @@
   <div id="fade"></div>
   <button class="btn2" id="skip">⏭ გამოტოვება</button>
   <div class="ov top" id="home" style="justify-content:center">
-    <div id="accBar" style="display:none;position:absolute;top:12px;left:50%;transform:translateX(-50%);width:min(340px,calc(100% - 24px));align-items:center;justify-content:space-between;gap:8px;font-size:13px"><span id="accName">👤 სტუმარი</span><button class="btn2" id="accBtn" style="padding:7px 12px;font-size:12px">შესვლა / რეგისტრაცია</button></div>
+    <div id="accBar" style="display:none;position:absolute;top:12px;left:12px;right:56px;max-width:340px;margin:0 auto;align-items:center;justify-content:space-between;gap:8px;font-size:13px"><span id="accName">👤 სტუმარი</span><button class="btn2" id="accBtn" style="padding:7px 12px;font-size:12px">შესვლა / რეგისტრაცია</button></div>
     <div class="big" style="font-size:52px">🏆</div>
     <h1 style="font-size:28px">საქართველოს<br>ჩემპიონატი</h1>
     <div class="sub">პენალტების სერია · 16 რეგიონი</div>
@@ -101,6 +104,7 @@
       <button class="hb main" id="hChamp"><span class="ic">🏆</span><span><b>ჩემპიონატი</b><small>16 რეგიონი · კომპიუტერის წინააღმდეგ</small></span></button>
       <button class="hb online" id="hFriend"><span class="ic">👥</span><span><b>მეგობართან</b><small>1 × 1 · კოდით</small></span></button>
       <button class="hb online" id="hTour"><span class="ic">🏟️</span><span><b>ონლაინ ტურნირი</b><small>4, 8 ან 16 მოთამაშე · ამხანაგური, ტიტულები არ ითვლება</small></span></button>
+      <button class="hb" id="achBtn"><span class="ic">📊</span><span><b>ჩემი მიღწევები</b><small>ტურნირები, მატჩები, მედლები</small></span></button>
       <button class="hb" id="medBtn"><span class="ic">🏅</span><span><b>რეგიონების ტიტულები</b><small>საქართველოს ჩემპიონატის მედლები</small></span></button>
     </div>
     <div class="sub" id="homeMsg" style="margin-top:10px">იტვირთება…</div>
@@ -153,6 +157,14 @@
       <div class="row"><button class="btn sm" id="aLogin">შესვლა</button><button class="btn2" id="aReg">რეგისტრაცია</button></div>
       <div id="aMsg" style="font-size:13px;color:#fca5a5;min-height:18px"></div>
       <div style="font-size:11px;opacity:.55">რეგისტრაციისას ამ ბრაუზერში მოგებული მედლები ანგარიშზე გადავა. პაროლის აღდგენა ვერ ხერხდება — დაიმახსოვრე.</div>
+    </div>
+  </div>
+  <div class="ov hide" id="achModal" style="z-index:6;background:rgba(0,0,0,.85)">
+    <div style="background:#0f1a33;border:1px solid rgba(255,255,255,.15);border-radius:18px;padding:16px 12px;width:100%;max-width:370px;max-height:88%;display:flex;flex-direction:column;position:relative">
+      <button class="btn2" id="achClose" style="position:absolute;right:10px;top:10px;padding:6px 11px">✕</button>
+      <h2 style="margin:2px 0 4px">📊 ჩემი მიღწევები</h2>
+      <div id="achWho" style="font-size:12px;opacity:.65;margin-bottom:10px"></div>
+      <div id="achBody" style="overflow-y:auto;flex:1;text-align:left"></div>
     </div>
   </div>
   <div class="ov hide" id="friend">
@@ -761,7 +773,14 @@ function matchKits(A,B){
   return{ka,kb,ga,gb};
 }
 let TOUR=null,human=null,cur=null,swapped=false,aimT=0;
-let ACC={reg:false,nick:'',medals:null,played:0};
+let ACC={reg:false,nick:'',medals:null,played:0,ach:null};
+// personal achievements: champ{played,w,l} friend{played,w,l} tour{played,w,l,g,s,b}
+function loadAch(){if(ACC.reg)return ACC.ach||(ACC.ach={});try{return JSON.parse(localStorage.getItem('pen_ach'))||{};}catch(e){return{};}}
+function achAdd(sec,key,n=1){
+  const A=loadAch();A[sec]=A[sec]||{};A[sec][key]=(A[sec][key]||0)+n;
+  if(ACC.reg){getNet().then(N=>N.tx(`users/${N.uid()}/ach/${sec}/${key}`,v=>(v||0)+n)).catch(()=>{});return;}
+  try{localStorage.setItem('pen_ach',JSON.stringify(A));}catch(e){}
+}
 function loadCup(){if(ACC.reg)return{played:ACC.played||0};try{return JSON.parse(localStorage.getItem('pen_cup'))||{titles:0,played:0};}catch(e){return{titles:0,played:0};}}
 function saveCup(c){if(ACC.reg){ACC.played=c.played;getNet().then(n=>n.set(`users/${n.uid()}/played`,c.played)).catch(()=>{});return;}try{localStorage.setItem('pen_cup',JSON.stringify(c));}catch(e){}}
 // medals are stored ONLY for the region the player controlled
@@ -769,7 +788,7 @@ function loadMedals(){if(ACC.reg)return ACC.medals||{};try{return JSON.parse(loc
 function addMedal(team,kind){if(ACC.reg){const m=ACC.medals=ACC.medals||{};m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]=(m[team][kind]||0)+1;getNet().then(n=>n.tx(`users/${n.uid()}/medals/${team}/${kind}`,v=>(v||0)+1)).catch(()=>{});return;}const m=loadMedals();m[team]=m[team]||{g:0,s:0,b:0};m[team][kind]++;try{localStorage.setItem('pen_medals',JSON.stringify(m));}catch(e){}}
 const MED={g:'🥇',s:'🥈',b:'🥉'};
 function medalStr(x){return x?['g','s','b'].filter(k=>x[k]).map(k=>MED[k]+(x[k]>1?x[k]:'')).join(' '):'';}
-function showStats(){const c=loadCup();$('stats').innerHTML=c.played?`<div style="opacity:.55">ნათამაშები ტურნირები: ${c.played}</div>`:'';$('stats2').textContent='';}
+function showStats(){$('stats').innerHTML='';return;const c=loadCup();$('stats').innerHTML=c.played?`<div style="opacity:.55">ნათამაშები ტურნირები: ${c.played}</div>`:'';$('stats2').textContent='';}
 function medalTable(m,emptyMsg){
   const rows=[...Array(16).keys()].map(i=>({i,g:+(m[i]?.g||0),s:+(m[i]?.s||0),b:+(m[i]?.b||0)}))
     .sort((x,y)=>(y.g-x.g)||(y.s-x.s)||(y.b-x.b)||(tn(x.i).localeCompare(tn(y.i))));
@@ -793,6 +812,21 @@ async function openMedals(tab){
       :'ვერ ჩაიტვირთა: '+(e.code||e.message);
     box.innerHTML=`<div style="opacity:.8;padding:16px;font-size:13px">${msg}</div>`;}
 }
+function openAch(){
+  const A=loadAch(),c=A.champ||{},f=A.friend||{},t=A.tour||{},M=loadMedals();
+  const champPlayed=Math.max(c.played||0,(loadCup().played||0));
+  let G=0,S=0,B=0;for(const k in M){G+=+(M[k].g||0);S+=+(M[k].s||0);B+=+(M[k].b||0);}
+  const cell=(v,l)=>`<div><b>${v||0}</b><small>${l}</small></div>`;
+  const pct=(w,l)=>{const n=(w||0)+(l||0);return n?Math.round(100*(w||0)/n)+'%':'—';};
+  $('achWho').textContent=ACC.reg?`ანგარიში: ${ACC.nick} — ყველა მოწყობილობაზე`:'სტუმარი — ინახება მხოლოდ ამ ბრაუზერში. შედი ანგარიშზე, რომ ყველგან გაგყვეს.';
+  $('achBody').innerHTML=
+   `<div class="achs"><h3>🏆 საქართველოს ჩემპიონატი</h3><div class="achg">${cell(champPlayed,'ტურნირი')}${cell(c.w,'მოგებული მატჩი')}${cell(pct(c.w,c.l),'მოგების %')}${cell(G,'🥇 ოქრო')}${cell(S,'🥈 ვერცხლი')}${cell(B,'🥉 ბრინჯაო')}</div></div>`+
+   `<div class="achs"><h3>👥 მეგობართან</h3><div class="achg">${cell(f.played,'მატჩი')}${cell(f.w,'მოგება')}${cell(pct(f.w,f.l),'მოგების %')}</div></div>`+
+   `<div class="achs"><h3>🏟️ ამხანაგური ტურნირი</h3><div class="achg">${cell(t.played,'ტურნირი')}${cell(t.w,'მოგებული მატჩი')}${cell(pct(t.w,t.l),'მოგების %')}${cell(t.g,'🥇 ოქრო')}${cell(t.s,'🥈 ვერცხლი')}${cell(t.b,'🥉 ბრინჯაო')}</div></div>`+
+   `<div class="achs"><h3>🏅 ჩემპიონატის მედლები რეგიონებით</h3>${medalTable(M,'ჯერ მედალი არ გაქვს — მოიგე საქართველოს ჩემპიონატი!')}</div>`;
+  $('achModal').classList.remove('hide');
+}
+$('achBtn').onclick=openAch;$('achClose').onclick=()=>$('achModal').classList.add('hide');
 $('medBtn').onclick=()=>openMedals('all');$('tAll').onclick=()=>openMedals('all');$('tMine').onclick=()=>openMedals('mine');
 $('medClose').onclick=()=>$('medModal').classList.add('hide');
 
@@ -808,7 +842,7 @@ function accErr(e){const c=(e&&(e.code||e.message))||'';
 async function loadAccount(){
   if(!ONLINE_OK)return;
   try{const n=await getNet();PID=n.uid()||PID;
-    if(n.isReg()){const d=(await n.get('users/'+n.uid()))||{};ACC={reg:true,nick:n.nick()||d.nick||'',medals:d.medals||{},played:d.played||0};}
+    if(n.isReg()){const d=(await n.get('users/'+n.uid()))||{};ACC={reg:true,nick:n.nick()||d.nick||'',medals:d.medals||{},played:d.played||0,ach:d.ach||{}};}
     else ACC={reg:false,nick:'',medals:null,played:0};}
   catch(e){console.warn(e);}
   renderAcc();if(!$('home').classList.contains('hide')){showStats();checkResume();}
@@ -830,7 +864,8 @@ function readForm(){const nick=$('aNick').value.trim(),pw=$('aPw').value;
 $('aReg').onclick=async()=>{const f=readForm();if(!f)return;accMsg('⏳');
   try{const n=await getNet();const guestM=JSON.parse(localStorage.getItem('pen_medals')||'{}'),guestC=JSON.parse(localStorage.getItem('pen_cup')||'{}');
     await n.register(f.nick,f.pw);
-    await n.set('users/'+n.uid(),{nick:f.nick,medals:guestM,played:guestC.played||0,created:Date.now()}); // guest progress moves into the account
+    const guestA=JSON.parse(localStorage.getItem('pen_ach')||'{}');
+    await n.set('users/'+n.uid(),{nick:f.nick,medals:guestM,played:guestC.played||0,ach:guestA,created:Date.now()}); // guest progress moves into the account
     $('accModal').classList.add('hide');await loadAccount();buildPick();}
   catch(e){accMsg(accErr(e));}};
 $('aLogin').onclick=async()=>{const f=readForm();if(!f)return;accMsg('⏳');
@@ -864,7 +899,7 @@ function newTournament(my){
   const ids=[...Array(16).keys()].sort(()=>Math.random()-.5);
   const r0=[];for(let i=0;i<8;i++)r0.push({a:ids[i*2],b:ids[i*2+1],res:null});
   TOUR={my,rounds:[r0],out:false,champ:null,third:null,podium:null};
-  const c=loadCup();c.played++;saveCup(c);
+  const c=loadCup();c.played++;saveCup(c);achAdd('champ','played');
   showBracket();
 }
 function nextMatch(){if(!TOUR||TOUR.champ!=null)return null;if(TOUR.third&&!TOUR.third.res)return TOUR.third;const r=TOUR.rounds[TOUR.rounds.length-1];const m=r.find(x=>!x.res);return m||null;}
@@ -952,6 +987,7 @@ function startMatch(m,mine){
 }
 function finishMatch(){
   if(cur&&cur.tour){finishTourCpu();return;}
+  if(human)achAdd('champ',winnerOf(pRes,cRes)==='p'?'w':'l');
   const pr=swapped?cRes:pRes,cr=swapped?pRes:cRes;record(cur.m,pr,cr);
   const wA=winnerOf(pRes,cRes)==='p',wTeam=wA?cur.A:cur.B,isFinal=cur.m===TOUR.rounds[3]?.[0],isThird=!!cur.m.third;
   state='over';renderHUD();sfx.whistle(true);$('skip').style.display='none';
@@ -1115,7 +1151,7 @@ function backToMenu(){leaveOnline();showHome();}
 function finishOnline(){
   if(online.kind==='tour'){finishTourOnline();return;}
   online.ended=true;state='over';renderHUD();sfx.whistle(true);
-  const w=winnerOf(pRes,cRes),iWon=w===human;if(iWon)cheer=4;
+  const w=winnerOf(pRes,cRes),iWon=w===human;if(iWon)cheer=4;achAdd('friend','played');achAdd('friend',iWon?'w':'l');
   $('eicon').textContent=iWon?'🏆':'😔';$('etitle').textContent=iWon?'გაიმარჯვე!':'წააგე';
   $('eteams').innerHTML=`${chip(cur.A)} ${tn(cur.A)} — ${tn(cur.B)} ${chip(cur.B)}`;$('escore').textContent=`${sum(pRes)} : ${sum(cRes)}`;
   const box=$('eBtns');box.innerHTML='';
@@ -1185,8 +1221,11 @@ function onTour(T){
   if(T.players&&T.players[PID]&&T.players[PID].online===false)NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
   if(T.state==='lobby'){renderLobby(T);return;}
   doDuties(T);
+  const once=k=>{try{if(localStorage.getItem(k))return false;localStorage.setItem(k,'1');return true;}catch(e){return true;}};
+  if(T.state==='running'&&T.players&&T.players[PID]&&once('pen_tplayed_'+tour.code+'_'+T.created))achAdd('tour','played');
   if(T.podium&&!tour.awarded){tour.awarded=true;const my=tMine();
-    for(const k of['g','s','b'])if(T.podium[k]===my){const key='awarded_'+tour.code;if(!sessionStorage.getItem(key)){sessionStorage.setItem(key,'1');}} // online tournaments are friendly: no championship titles
+    // friendly tournament: counted in personal achievements only, never in the championship titles
+    for(const k of['g','s','b'])if(T.podium[k]===my&&once('pen_tmedal_'+tour.code+'_'+T.created))achAdd('tour',k);
   }
   if(state==='menu'&&!$('bracket').classList.contains('hide')||!$('tourOv').classList.contains('hide'))showTourBracket();
   if(online&&online.kind==='tour')online.T=T;
@@ -1295,6 +1334,7 @@ function startTourMatch(mt){
   hint(turn===human?'🎯 შეეხე კარს — სად დაარტყამ?':'🧤 შენ მეკარე ხარ — სად გადახტები?');
 }
 function tourEndScreen(iWon,A,B,title){
+  achAdd('tour',iWon?'w':'l');
   state='over';renderHUD();sfx.whistle(true);if(iWon)cheer=4;
   $('eicon').textContent=iWon?'🎉':'😔';$('etitle').textContent=title||(iWon?'გაიმარჯვე!':'წააგე');
   $('eteams').innerHTML=`${chip(A)} ${tn(A)} — ${tn(B)} ${chip(B)}`;$('escore').textContent=`${sum(pRes)} : ${sum(cRes)}`;
