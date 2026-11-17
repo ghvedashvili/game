@@ -1392,7 +1392,7 @@ function enterTour(code){
   NET.onDiscSet(`${tour.base}/players/${PID}/online`,false);
   NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
   tour.unwatch=NET.watch(tour.base,onTour);
-  tour.poll=setInterval(async()=>{if(!tour)return;try{const T=await NET.get(tour.base);if(JSON.stringify(T)!==tour.lastJ)onTour(T);}catch(e){}},3000);
+  tour.poll=setInterval(async()=>{if(!tour)return;try{const T=await NET.get(tour.base);if(JSON.stringify(T)!==tour.lastJ)onTour(T);else if(T)doDuties(T);}catch(e){}},3000);
   showOnly('tourOv');$('tStart').style.display='none';$('tLobby').style.display='flex';$('tBig').textContent=code;tMsg('');
 }
 function leaveTour(gone){if(!tour)return;clearInterval(tour.poll);if(gone){try{tour.unwatch&&tour.unwatch();}catch(e){}if(NET)NET.onDiscCancel(`${tour.base}/players/${PID}/online`);try{localStorage.removeItem('pen_lastTour');}catch(e){}tour=null;tourT=null;return;}try{tour.unwatch&&tour.unwatch();}catch(e){}if(NET)NET.set(`${tour.base}/players/${PID}/online`,false).catch(()=>{});tour=null;tourT=null;}
@@ -1456,11 +1456,18 @@ function dutyPid(T){const pl=T.players||{};if(pl[T.host]&&pl[T.host].online!==fa
 function doDuties(T){
   if(T.state!=='running'||dutyPid(T)!==PID||T.podium)return;
   const H=humansOf(T),R=tRounds(T),r=R.length-1,cur=R[r];
-  const simRes=(a,b)=>{const s=simulate();return{sa:sum(s.pr),sb:sum(s.cr),w:winnerOf(s.pr,s.cr)==='p'?a:b};};
+  const G=T.games||{};
+  const simRes=(a,b,key)=>{const sv=G[key]&&G[key].cpu;
+    if(sv){const s=simulate(dec(sv.p),dec(sv.c)),mw=winnerOf(s.pr,s.cr)==='p',sw=sv.sw===1;   // continue from the score the player reached
+      return{sa:sum(sw?s.cr:s.pr),sb:sum(sw?s.pr:s.cr),w:(mw!==sw)?a:b};}
+    const s=simulate();return{sa:sum(s.pr),sb:sum(s.cr),w:winnerOf(s.pr,s.cr)==='p'?a:b};};
+  // a player who went offline gets 2 minutes to come back before the computer finishes their match
+  const seen=tour.offSeen||(tour.offSeen={}),now=Date.now();
+  for(const [pid,p] of Object.entries(T.players||{})){if(p.online===false){if(!seen[pid])seen[pid]=now;}else delete seen[pid];}
   const w={};let changed=false;
-  const off=t=>H[t]!=null&&(T.players[H[t]]||{}).online===false; // a player who left is replaced by the computer
-  cur.forEach((m,i)=>{if(!m.res&&((H[m.a]==null||off(m.a))&&(H[m.b]==null||off(m.b)))){w[`rounds/${r}/${i}/res`]=simRes(m.a,m.b);m.res=w[`rounds/${r}/${i}/res`];changed=true;}});
-  if(T.third&&!T.third.res&&(H[T.third.a]==null||off(T.third.a))&&(H[T.third.b]==null||off(T.third.b))){w['third/res']=simRes(T.third.a,T.third.b);T.third.res=w['third/res'];changed=true;}
+  const off=t=>H[t]!=null&&(T.players[H[t]]||{}).online===false&&now-(seen[H[t]]||now)>=120000; // a player who left is replaced by the computer
+  cur.forEach((m,i)=>{if(!m.res&&((H[m.a]==null||off(m.a))&&(H[m.b]==null||off(m.b)))){w[`rounds/${r}/${i}/res`]=simRes(m.a,m.b,`r${r}_${i}`);m.res=w[`rounds/${r}/${i}/res`];changed=true;}});
+  if(T.third&&!T.third.res&&(H[T.third.a]==null||off(T.third.a))&&(H[T.third.b]==null||off(T.third.b))){w['third/res']=simRes(T.third.a,T.third.b,'third');T.third.res=w['third/res'];changed=true;}
   const done=cur.every(m=>m.res);
   if(done){
     if(cur.length===1){if(T.third&&T.third.res){const f=cur[0];w['podium']={g:f.res.w,s:f.res.w===f.a?f.b:f.a,b:T.third.res.w};changed=true;}}
@@ -1522,23 +1529,48 @@ function showTourBracket(){
   $('actLbl').innerHTML=lbl;const bx=$('actBtns');bx.innerHTML='';
   for(const [c,t,f] of B){const e=document.createElement('button');e.className=c;e.textContent=t;e.onclick=f;bx.appendChild(e);}
 }
-function startTourMatch(mt){
+const dec=x=>String(x||'').split('').map(c=>c==='1');
+const enc=a=>a.map(x=>x?1:0).join('');
+// progress of a tournament match vs the computer is kept in the database after every kick,
+// so leaving the page and coming back continues the match from the same score
+function saveTourProg(){NET.set(`${tour.base}/games/${cur.tour.key}/cpu`,{p:enc(pRes),c:enc(cRes),sw:swapped?1:0,s:playerShots.join(''),t:Date.now()}).catch(()=>{});}
+// replay the kicks already decided in a match vs another player (after leaving and returning)
+function tourFastForward(g){
+  if(!online||online.ff||!online.started)return;online.ff=true;
+  const m=(g&&g.m0)||{};let k=0;
+  while(m[k]&&m[k].res){(k%2===0?pRes:cRes).push(m[k].res.outcome==='goal');k++;}
+  if(!k)return;
+  online.k=k;turn=k%2===0?'p':'c';setupKick();
+  if(winnerOf(pRes,cRes)){finishOnline();return;}
+  banner(`გაგრძელება ${sum(pRes)} : ${sum(cRes)}`,'#facc15');
+  const mine=m[k]&&m[k][myKey()];
+  if(mine!=null){online.picked=true;online.pz=mine;hint('⏳ ელოდება მეტოქეს…');}
+  else hint(turn===human?'🎯 შეეხე კარს — სად დაარტყამ?':'🧤 შენ მეკარე ხარ — სად გადახტები?');
+}
+async function startTourMatch(mt){
   const T=tourT,H=humansOf(T),my=tMine(),opp=mt.m.a===my?mt.m.b:mt.m.a;
   if(H[opp]==null){ // vs computer: local match, I am always shown as team A
+    const sv=await NET.get(`${tour.base}/games/${mt.key}/cpu`).catch(()=>null);
+    if(!tour)return;
     swapped=mt.m.b===my;const A=my,B=opp;
-    cur={m:mt.m,A,B,kits:matchKits(TEAMS[A],TEAMS[B]),tour:{path:mt.path,a:mt.m.a,b:mt.m.b}};
+    cur={m:mt.m,A,B,kits:matchKits(TEAMS[A],TEAMS[B]),tour:{path:mt.path,a:mt.m.a,b:mt.m.b,key:mt.key}};
     rigs.kickA.setKit(cur.kits.ka);rigs.kickB.setKit(cur.kits.kb);rigs.gkA.setKit(cur.kits.ga);rigs.gkB.setKit(cur.kits.gb);
     human='p';setHUDTeams(A,B);
     for(const o of ovs)$(o).classList.add('hide');$('hud').style.visibility='visible';$('skip').style.display='none';
-    pRes=[];cRes=[];playerShots=[];turn='p';sfx.whistle(false);setupKick();return;
+    pRes=[];cRes=[];playerShots=[];turn='p';
+    if(sv&&sv.sw===(swapped?1:0)){pRes=dec(sv.p);cRes=dec(sv.c);playerShots=String(sv.s||'').split('').map(Number);turn=pRes.length>cRes.length?'c':'p';}
+    sfx.whistle(false);setupKick();
+    if(pRes.length){banner(`გაგრძელება ${sum(pRes)} : ${sum(cRes)}`,'#facc15');if(winnerOf(pRes,cRes))finishTourCpu();}
+    return;
   }
   // vs another player: team a's device plans the kicks
   const role=mt.m.a===my?'host':'guest';
   online={kind:'tour',role,base:`${tour.base}/games/${mt.key}`,k:0,round:0,picked:false,pz:-1,started:false,ended:false,tour:{path:mt.path,a:mt.m.a,b:mt.m.b}};
   NET.set(`${online.base}/in_${role}`,true);
-  online.unwatch=NET.watch(online.base,g=>{if(!online||online.kind!=='tour')return;online.game=g;processKicks(g&&g.m0);});
+  online.unwatch=NET.watch(online.base,g=>{if(!online||online.kind!=='tour')return;online.game=g;tourFastForward(g);if(online)processKicks(g&&g.m0);});
   startOnlineMatch(mt.m.a,mt.m.b);
   hint(turn===human?'🎯 შეეხე კარს — სად დაარტყამ?':'🧤 შენ მეკარე ხარ — სად გადახტები?');
+  if(online&&online.game!==undefined){tourFastForward(online.game);if(online)processKicks(online.game&&online.game.m0);}
 }
 function tourEndScreen(iWon,A,B,title){
   achAdd('tour',iWon?'w':'l');
@@ -1631,6 +1663,7 @@ function showResult(kind){
   banner(txt,good?'#facc15':(human?'#f87171':'#ffffff'));
   if(good){cheer=2.5;sfx.cheer();}else sfx.groan();
   kAfter={good:isGoal,t0:T};
+  if(cur&&cur.tour&&cur.tour.key&&!online&&tour)saveTourProg();
   state='result';rT=0;renderHUD();
 }
 function winner(){return winnerOf(pRes,cRes);}
