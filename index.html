@@ -794,13 +794,26 @@ function kkUpdate(){
   // after the shot: arms up (goal) or hands on head (miss), until celebration clips are added
   if(kAfter&&T>kAfter.t0){
     if(!kAfter.c){ // pick an emotion clip once, start where the kicker stands, keep facing the goal
-      kAfter.c=kAfter.good?CL.win:[CL.lose,CL.lose2,CL.lose3][Math.random()*3|0];
-      kAfter.snap=snapPose(kicker);const hp=kicker.b.Hips.getWorldPosition(V()),h0=clipP(kAfter.c,0,-1,V());
+      kAfter.c=kAfter.good?CL.win2:[CL.lose,CL.lose2,CL.lose3][Math.random()*3|0];
+      kAfter.skip={win:1.0,win2:.1,lose:.45,lose2:1.5,lose3:.35}[kAfter.c.id]||0; // jump straight to the reaction
+      kAfter.snap=snapPose(kicker);kAfter.hw=kicker.b.Hips.getWorldPosition(V());const hp=kicker.b.Hips.getWorldPosition(V()),h0=clipP(kAfter.c,0,-1,V());
       const yaw=Math.atan2(-hp.x,-hp.z);kAfter.q=quatFrom(yaw,0,0); // stays facing the goal, back to the camera
-      kAfter.p=V(hp.x,0,hp.z).sub(V(h0.x,0,h0.z).applyQuaternion(kAfter.q));}
+      kAfter.p=V(hp.x,0,hp.z).sub(V(h0.x,0,h0.z).applyQuaternion(kAfter.q));
+      { // some clips are recorded facing another way: turn the whole clip so the body faces the goal
+        const sv=snapPose(kicker);kicker.root.quaternion.copy(kAfter.q);kicker.root.position.copy(kAfter.p);
+        const n=4;let sx=0,sz=0;for(let i=0;i<n;i++){poseClip(kicker,kAfter.c,kAfter.skip+i*.4,false);
+          const f=kicker.headFwd.clone().applyQuaternion(kicker.b.Head.getWorldQuaternion(Q()));sx+=f.x;sz+=f.z;}
+        const err=yaw-Math.atan2(sx,sz);kAfter.q=quatFrom(yaw+err,0,0);
+        kAfter.p=V(hp.x,0,hp.z).sub(V(h0.x,0,h0.z).applyQuaternion(kAfter.q));
+        blendSnap(kicker,sv,0);}
+    }
     const te=T-kAfter.t0;kicker.root.quaternion.copy(kAfter.q);kicker.root.position.copy(kAfter.p);
-    poseClip(kicker,kAfter.c,Math.min(te,kAfter.c.dur-.01),false);
-    blendSnap(kicker,kAfter.snap,smooth(clamp(te/.6)));groundFix(kicker);return;
+    poseClip(kicker,kAfter.c,Math.min(te+kAfter.skip,kAfter.c.dur-.01),false);
+    { // cross-fade: bones in local space, but the hips in world space so the body does not jump between the two root frames
+      const w=smooth(clamp(te/(kAfter.c.id==='win2'?.45:.3)));
+      if(w<1){const hw1=kicker.b.Hips.getWorldPosition(V());blendSnap(kicker,kAfter.snap,w);
+        const hw=kAfter.hw.clone().lerp(hw1,w);kicker.b.Hips.parent.updateMatrixWorld(true);kicker.b.Hips.position.copy(kicker.b.Hips.parent.worldToLocal(hw));kicker.root.updateMatrixWorld(true);}
+    }groundFix(kicker);return;
   }
   if(false){ // arm-raise removed: looked unnatural; real celebration clips will replace it
     const w=smooth(clamp((T-kAfter.t0)/.5)),b=kicker.b,hd=b.Head.getWorldPosition(V());
@@ -1189,7 +1202,7 @@ const MockNet={
   fire(){const db=this.read();for(const w of this.ws){const v=getPath(db,w.path);const j=JSON.stringify(v);if(j!==w.last){w.last=j;setTimeout(()=>w.cb(clone(v)));}}},
   async init(){addEventListener('storage',e=>{if(e.key==='mockdb')this.fire();});
     if(!localStorage.getItem('mock_uid')){localStorage.setItem('mock_uid','anon_'+Math.random().toString(36).slice(2,9));localStorage.removeItem('mock_nick');}},
-  uid(){return localStorage.getItem('mock_uid');},isReg(){return!!localStorage.getItem('mock_nick');},nick(){return localStorage.getItem('mock_nick')||'';},
+  uid(){let u=sessionStorage.getItem('mock_tab');if(!u){u='tab_'+Math.random().toString(36).slice(2,8);sessionStorage.setItem('mock_tab',u);}return localStorage.getItem('mock_nick')?localStorage.getItem('mock_uid'):u;}, // test backend: each tab is its own playerisReg(){return!!localStorage.getItem('mock_nick');},nick(){return localStorage.getItem('mock_nick')||'';},
   _acc(){return JSON.parse(localStorage.getItem('mock_acc')||'{}');},
   async register(nick,pw){const a=this._acc(),k=nickEmail(nick);if(a[k])throw{code:'auth/email-already-in-use'};if(pw.length<6)throw{code:'auth/weak-password'};a[k]={pw,uid:this.uid()};localStorage.setItem('mock_acc',JSON.stringify(a));localStorage.setItem('mock_nick',nick);},
   async login(nick,pw){const x=this._acc()[nickEmail(nick)];if(!x||x.pw!==pw)throw{code:'auth/invalid-credential'};localStorage.setItem('mock_uid',x.uid);localStorage.setItem('mock_nick',nick);},
@@ -1376,18 +1389,20 @@ function enterTour(code){
   NET.onDiscSet(`${tour.base}/players/${PID}/online`,false);
   NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
   tour.unwatch=NET.watch(tour.base,onTour);
+  tour.poll=setInterval(async()=>{if(!tour)return;try{const T=await NET.get(tour.base);if(JSON.stringify(T)!==tour.lastJ)onTour(T);}catch(e){}},3000);
   showOnly('tourOv');$('tStart').style.display='none';$('tLobby').style.display='flex';$('tBig').textContent=code;tMsg('');
 }
-function leaveTour(){if(!tour)return;try{tour.unwatch&&tour.unwatch();}catch(e){}if(NET)NET.set(`${tour.base}/players/${PID}/online`,false).catch(()=>{});tour=null;tourT=null;}
+function leaveTour(){if(!tour)return;clearInterval(tour.poll);try{tour.unwatch&&tour.unwatch();}catch(e){}if(NET)NET.set(`${tour.base}/players/${PID}/online`,false).catch(()=>{});tour=null;tourT=null;}
 const tMine=()=>tourT&&tourT.players&&tourT.players[PID]?tourT.players[PID].team:-1;
 const humansOf=T=>{const m={};for(const [pid,p] of Object.entries(T.players||{}))m[p.team]=pid;return m;};
 const arr=x=>Array.isArray(x)?x:x?Object.keys(x).sort((a,b)=>a-b).map(k=>x[k]):[];
 function tRounds(T){return arr(T.rounds).map(arr);}
 function roundName(size,r){const R=Math.log2(size),d=R-1-r;return['ფინალი','ნახევარფინალი','მეოთხედფინალი','1/8 ფინალი'][d];}
-function onTour(T){
+function onTour(T){try{onTour2(T);}catch(e){console.error(e);tMsg('შეცდომა: '+e.message);}}
+function onTour2(T){
   if(!tour)return;
   if(!T){leaveTour();showHome();return;}
-  tourT=T;
+  tour.lastJ=JSON.stringify(T);tourT=T;
   if(T.players&&T.players[PID]&&T.players[PID].online===false)NET.set(`${tour.base}/players/${PID}/online`,true).catch(()=>{});
   if(T.state==='lobby'){renderLobby(T);return;}
   doDuties(T);
@@ -1412,7 +1427,11 @@ $('tGo').onclick=async()=>{
   const T=tourT;if(!T||T.host!==PID)return;
   const hum=Object.values(T.players||{}).map(p=>p.team);
   const cpu=[...Array(16).keys()].filter(i=>!hum.includes(i)).sort(()=>Math.random()-.5).slice(0,T.size-hum.length);
-  const ids=[...hum,...cpu].sort(()=>Math.random()-.5);
+  // real players are spread over the bracket (bit-reversed slots) so two players can only meet in the final,
+  // four players only in the semi-finals, and so on; computer teams fill the remaining slots at random
+  const n=T.size,bits=Math.log2(n),rev=k=>{let r=0;for(let i=0;i<bits;i++)r=(r<<1)|((k>>i)&1);return r;};
+  const ids=Array(n).fill(null);hum.sort(()=>Math.random()-.5).forEach((t,k)=>{ids[rev(k)]=t;});
+  const rest=cpu.slice();for(let i=0;i<n;i++)if(ids[i]==null)ids[i]=rest.pop();
   const r0=[];for(let i=0;i<ids.length;i+=2)r0.push({a:ids[i],b:ids[i+1]});
   await NET.tx(tour.base,X=>{if(X===null)return null;if(X.state!=='lobby')return;X.state='running';X.rounds=[r0];X.started=Date.now();return X;});
 };
@@ -1479,6 +1498,8 @@ function showTourBracket(){
     B.push(['btn sm','🏠 მთავარი',()=>{leaveTour();showHome();}]);}
   else if(mt){const opp=mt.m.a===my?mt.m.b:mt.m.a;
     lbl=`${mt.key==='third'?'🥉 ბრინჯაოსთვის':mt.m===R[RN-1]?.[0]?'🥇 ფინალი':'შენი მატჩი'}: ${tn(mt.m.a)} — ${tn(mt.m.b)} ${H[opp]!=null?'(👤 მოთამაშე)':'(🤖 კომპიუტერი)'}`;
+    const waiting=H[opp]!=null&&games[mt.key]&&(games[mt.key].in_host||games[mt.key].in_guest);
+    if(waiting)lbl='⚡ მეტოქე უკვე გელოდება! '+lbl;
     B.push(['btn sm','▶ თამაში',()=>startTourMatch(mt)]);}
   else if(myTourOut(T)){lbl='გავარდი — ტურნირს თვალს ადევნებ აქ, ბადეზე.';B.push(['btn2','🏠 მთავარი',()=>{leaveTour();showHome();}]);}
   else lbl='⏳ ელოდება სხვა მატჩების დასრულებას…';
@@ -1593,7 +1614,7 @@ function showResult(kind){
   else txt=isGoal?'გაიტანეს...':kind==='save'?'შენ მოიგერიე!':'ძელი! 😅';
   banner(txt,good?'#facc15':(human?'#f87171':'#ffffff'));
   if(good){cheer=2.5;sfx.cheer();}else sfx.groan();
-  kAfter={good:isGoal,t0:T+.25};
+  kAfter={good:isGoal,t0:T};
   state='result';rT=0;renderHUD();
 }
 function winner(){return winnerOf(pRes,cRes);}
@@ -1696,7 +1717,7 @@ fetch('player.glb').then(r=>{if(!r.ok)throw new Error(r.status);return r.arrayBu
 }).catch(e=>{$('homeMsg').textContent='ჩატვირთვა ვერ მოხერხდა';console.error(e);});
 showHome();
 // test hooks
-window.__game={kq(){const f=V(0,0,1).applyQuaternion(kicker.b.Hips.getWorldQuaternion(Q()));return JSON.stringify({ka:!!kAfter,c:kAfter&&kAfter.c&&kAfter.c.id,q:kicker.root.quaternion.toArray().map(x=>+x.toFixed(2)),hipsFwd:f.toArray().map(x=>+x.toFixed(2)),cam:camera.position.toArray().map(x=>+x.toFixed(1)),T,t0:kAfter&&kAfter.t0});},ci(){return JSON.stringify(Object.fromEntries(Object.entries(CI).map(([k,v])=>[k,[+v.tc.toFixed(2),v.hc?v.hc.toArray().map(x=>+x.toFixed(2)):0]])))+' gk:'+JSON.stringify({start:GK.start,off:GK.off,speed:GK.speed,T,btc:ball.tc,mode:GK.mode});},kd(){const o={};for(const k of ['Hips','Head','LeftFoot','RightFoot','LeftHand','RightHand','Spine2'])o[k]=keeper.b[k].getWorldPosition(V()).toArray().map(x=>+x.toFixed(2));o.root=keeper.root.position.toArray().map(x=>+x.toFixed(2));o.mode=GK.mode;o.clip=GK.c&&GK.c.id;o.D=GK.D.toArray().map(x=>+x.toFixed(2));o.kx=+GK.kx.toFixed(2);o.G=G.toArray().map(x=>+x.toFixed(2));return JSON.stringify(o);},T:()=>tourT,auto(){if(state!=='aim'||!human)return;const z=Math.random()*6|0;if(online)onlinePick(z);else choose(z);},play(){const b=[...document.querySelectorAll('#actBtns button')].find(x=>x.textContent.includes('თამაში'));if(b&&!$('bracket').classList.contains('hide')){b.click();return 1;}return 0;},toBracket(){const b=document.querySelector('#eBtns button');if(b&&!$('end').classList.contains('hide')){b.click();return 1;}return 0;},forceMine(win){const m=nextMatch();const meA=m.a===TOUR.my;const W=[true,true,true,true,true],L=[false,false,false];record(m,(meA===win)?W:L,(meA===win)?L:W);showBracket();},skipMine(){skipUntilMine();showBracket();},pick:z=>onlinePick(z),get score(){return JSON.stringify([pRes,cRes,turn,online&&online.k])},step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
+window.__game={kp(){const o={};for(const k of ['Hips','Head','LeftHand','RightHand','LeftFoot','RightFoot'])o[k]=kicker.b[k].getWorldPosition(V()).toArray().map(x=>+x.toFixed(3));o.te=kAfter&&kAfter.c?+(T-kAfter.t0).toFixed(2):null;return JSON.stringify(o);},kq(){const f=V(0,0,1).applyQuaternion(kicker.b.Hips.getWorldQuaternion(Q()));return JSON.stringify({ka:!!kAfter,c:kAfter&&kAfter.c&&kAfter.c.id,q:kicker.root.quaternion.toArray().map(x=>+x.toFixed(2)),hipsFwd:f.toArray().map(x=>+x.toFixed(2)),cam:camera.position.toArray().map(x=>+x.toFixed(1)),T,t0:kAfter&&kAfter.t0});},ci(){return JSON.stringify(Object.fromEntries(Object.entries(CI).map(([k,v])=>[k,[+v.tc.toFixed(2),v.hc?v.hc.toArray().map(x=>+x.toFixed(2)):0]])))+' gk:'+JSON.stringify({start:GK.start,off:GK.off,speed:GK.speed,T,btc:ball.tc,mode:GK.mode});},kd(){const o={};for(const k of ['Hips','Head','LeftFoot','RightFoot','LeftHand','RightHand','Spine2'])o[k]=keeper.b[k].getWorldPosition(V()).toArray().map(x=>+x.toFixed(2));o.root=keeper.root.position.toArray().map(x=>+x.toFixed(2));o.mode=GK.mode;o.clip=GK.c&&GK.c.id;o.D=GK.D.toArray().map(x=>+x.toFixed(2));o.kx=+GK.kx.toFixed(2);o.G=G.toArray().map(x=>+x.toFixed(2));return JSON.stringify(o);},T:()=>tourT,auto(){if(state!=='aim'||!human)return;const z=Math.random()*6|0;if(online)onlinePick(z);else choose(z);},play(){const b=[...document.querySelectorAll('#actBtns button')].find(x=>x.textContent.includes('თამაში'));if(b&&!$('bracket').classList.contains('hide')){b.click();return 1;}return 0;},toBracket(){const b=document.querySelector('#eBtns button');if(b&&!$('end').classList.contains('hide')){b.click();return 1;}return 0;},forceMine(win){const m=nextMatch();const meA=m.a===TOUR.my;const W=[true,true,true,true,true],L=[false,false,false];record(m,(meA===win)?W:L,(meA===win)?L:W);showBracket();},skipMine(){skipUntilMine();showBracket();},pick:z=>onlinePick(z),get score(){return JSON.stringify([pRes,cRes,turn,online&&online.k])},step(sec){for(let i=0;i<Math.round(sec*60);i++)update(1/60);renderer.render(scene,camera);},choose,get state(){return state},startGame(){newTournament(0);const m=nextMatch();if(!(m.a===0||m.b===0)){skipUntilMine();}startMatch(nextMatch(),true);},camOverride:null};
 </script>
 </body>
 </html>
