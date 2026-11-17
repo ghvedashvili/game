@@ -1060,8 +1060,16 @@ async function checkResume(){
   const b=$('hResume');b.style.display='none';if(!ONLINE_OK)return;
   const code=localStorage.getItem('pen_lastTour');if(!code)return;
   try{const n=await getNet();const T=await n.get('tours/'+code);
-    if(T&&T.players&&T.players[PID]&&!T.podium){b.style.display='flex';$('hResumeTxt').textContent=`ტურნირი ${code} · ${tn(T.players[PID].team)}`;b.onclick=()=>enterTour(code);}
-    else if(!T||T.podium)localStorage.removeItem('pen_lastTour');}catch(e){}
+    if(!T||!T.players||!T.players[PID]){localStorage.removeItem('pen_lastTour');return;}
+    if(T.state==='running'){
+      const P=T.podium||tourPodium(T);
+      if(P){ // tournament finished: record medals (if not yet) and forget it
+        if(!T.podium)n.tx(`tours/${code}/podium`,x=>x?undefined:P).catch(()=>{});
+        tourAward(P,T.players[PID].team,code,T.created);localStorage.removeItem('pen_lastTour');return;}
+      if(tourOverFor(T,T.players[PID].team)){localStorage.removeItem('pen_lastTour');return;} // knocked out, no matches left
+    }
+    if(localStorage.getItem('pen_lastTour')!==code)return;
+    b.style.display='flex';$('hResumeTxt').textContent=`ტურნირი ${code} · ${tn(T.players[PID].team)}`;b.onclick=()=>enterTour(code);}catch(e){}
 }
 function showHome(){checkResume();renderAcc();showOnly('home');showStats();$('homeMsg').textContent=rigs?'':'იტვირთება…';
   document.querySelectorAll('.hb.online').forEach(b=>b.style.display=ONLINE_OK?'flex':'none');}
@@ -1412,10 +1420,7 @@ function onTour2(T){
   doDuties(T);
   const once=k=>{try{if(localStorage.getItem(k))return false;localStorage.setItem(k,'1');return true;}catch(e){return true;}};
   if(T.state==='running'&&T.players&&T.players[PID]&&once('pen_tplayed_'+tour.code+'_'+T.created))achAdd('tour','played');
-  if(T.podium&&!tour.awarded){tour.awarded=true;const my=tMine();
-    // friendly tournament: counted in personal achievements only, never in the championship titles
-    for(const k of['g','s','b'])if(T.podium[k]===my&&once('pen_tmedal_'+tour.code+'_'+T.created))achAdd('tour',k);
-  }
+  if(T.podium&&!tour.awarded){tour.awarded=true;tourAward(T.podium,tMine(),tour.code,T.created);try{localStorage.removeItem('pen_lastTour');}catch(e){}}
   if(state==='menu'&&!$('bracket').classList.contains('hide')||!$('tourOv').classList.contains('hide'))showTourBracket();
   if(online&&online.kind==='tour')online.T=T;
 }
@@ -1487,6 +1492,17 @@ function myTourMatch(T){
   const i=R[r].findIndex(m=>!m.res&&(m.a===my||m.b===my));
   return i<0?null:{m:R[r][i],key:`r${r}_${i}`,path:`rounds/${r}/${i}`};
 }
+const tOnce=k=>{try{if(localStorage.getItem(k))return false;localStorage.setItem(k,'1');return true;}catch(e){return true;}};
+// friendly tournament: counted in personal achievements only, never in the championship titles
+function tourAward(P,my,code,created){for(const k of['g','s','b'])if(P[k]===my&&tOnce('pen_tmedal_'+code+'_'+created))achAdd('tour',k);}
+// medals once the final and the 3rd-place match are both decided
+function tourPodium(T){const R=tRounds(T),f=R[Math.log2(T.size)-1]?.[0];
+  if(!f||!f.res||!T.third||!T.third.res)return null;return{g:f.res.w,s:f.res.w===f.a?f.b:f.a,b:T.third.res.w};}
+// the player has no matches left (lost before the semi-finals, or played the 3rd-place match / final)
+function tourOverFor(T,my){const R=tRounds(T),RN=Math.log2(T.size);
+  for(let r=0;r<R.length;r++)for(const m of R[r])if(m.res&&(m.a===my||m.b===my)&&m.res.w!==my&&r!==RN-2)return true;
+  const f=R[RN-1]?.[0];if(f&&f.res&&(f.a===my||f.b===my))return true;
+  return !!(T.third&&T.third.res&&(T.third.a===my||T.third.b===my));}
 function myTourOut(T){
   const my=tMine();const R=tRounds(T);
   for(let r=0;r<R.length;r++)for(const m of R[r])if(m.res&&(m.a===my||m.b===my)&&m.res.w!==my&&!(R.length>=2&&r===Math.log2(T.size)-2))return true;
