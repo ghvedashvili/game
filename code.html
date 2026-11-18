@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>კოდის გამტეხი</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bungee&family=Noto+Sans+Georgian:wght@400;600;800;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* A street of storybook doors: cobalt night street, each topic a differently built door with a simple 4-digit lock */
+  --street:#2a43c4; --street-deep:#1c2f99; --ink:#151a3a; --paper:#fffdf5; --sun:#ffc93c;
+  --go:#1fbf6b; --no:#e5383b;
+  --p1:#ff6b6b; --p2:#ff9f1c; --p3:#16b6a6; --p4:#9b5de5;
+  --body:"Noto Sans Georgian",system-ui,sans-serif; --digits:"Bungee","Arial Black",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--street);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.45;
+  background-image:radial-gradient(rgba(255,255,255,.09) 2px,transparent 2.5px);background-size:26px 26px}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:4px solid var(--sun);outline-offset:3px}
+.wrap{max-width:1120px;margin:0 auto;padding:20px 16px 48px}
+.chunk{background:var(--paper);border:3px solid var(--ink);border-radius:16px;box-shadow:6px 6px 0 var(--ink)}
+.btn{color:var(--ink);border:3px solid var(--ink);border-radius:12px;background:var(--paper);padding:8px 14px;font-weight:800;box-shadow:3px 3px 0 var(--ink);transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.btn.sun{background:var(--sun)} .btn.go{background:var(--go);color:#fff}
+.btn.ghost{background:transparent;color:#fff;border-color:#fff;box-shadow:3px 3px 0 var(--street-deep)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:24px;color:#fff}
+h1{font-weight:900;font-size:clamp(30px,5vw,46px);margin:0;line-height:1;text-shadow:3px 3px 0 var(--ink)}
+.sub{margin:6px 0 0;font-weight:600;opacity:.9}
+.tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.starsTotal{font-family:var(--digits);font-size:19px;background:var(--ink);color:var(--sun);padding:6px 12px;border-radius:10px}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:700;color:#fff;cursor:pointer}
+.toggle input{width:22px;height:22px;accent-color:var(--sun)}
+
+/* home: the street */
+.street{display:grid;grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:18px}
+.house{position:relative;padding:14px 12px 12px;display:grid;justify-items:center;gap:6px;text-align:center;background:var(--wall)}
+.house .mini{width:62px;height:82px;margin-bottom:4px}
+.house .num{font-family:var(--digits);font-size:14px;background:var(--ink);color:#fff;border-radius:8px;padding:1px 8px}
+.house h3{margin:0;font-size:17px;font-weight:900;text-wrap:balance;color:var(--ink)}
+.house .dname{font-size:13px;font-weight:700;opacity:.75}
+.house.dark h3,.house.dark .dname{color:#fff}
+.dots{display:flex;gap:4px;flex-wrap:wrap;justify-content:center}
+.dots i{width:12px;height:12px;border-radius:50%;border:2px solid var(--ink);background:#fff}
+.dots i.s1{background:#ffe08a}.dots i.s2{background:var(--sun)}.dots i.s3{background:var(--go)}
+.house.locked{filter:grayscale(.85) brightness(.85);cursor:not-allowed}
+.house:not(.locked):hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--ink)}
+
+/* mini door used on the street */
+.mini{position:relative;border:3px solid var(--ink);background:var(--frame);padding:5px}
+.mini i{display:block;width:100%;height:100%;border:2px solid var(--ink)}
+.mini.shape-round{width:74px;height:74px}
+
+/* topic page */
+.intro{padding:20px 22px;display:grid;gap:10px;margin-bottom:20px}
+.intro .tag{display:inline-block;background:var(--sun);border:2.5px solid var(--ink);border-radius:8px;padding:2px 10px;font-weight:900;font-size:14px;width:max-content}
+.intro h2{margin:0;font-size:clamp(24px,4vw,32px);font-weight:900;text-wrap:balance}
+.intro p{margin:0;max-width:65ch}
+.example{background:#eef1ff;border:2.5px dashed var(--street);border-radius:10px;padding:8px 12px;font-weight:700;max-width:65ch}
+.lvgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.lv{padding:12px;text-align:left;display:grid;gap:4px;align-content:start}
+.lv .row1{display:flex;justify-content:space-between;align-items:center}
+.lv b{font-family:var(--digits);font-size:24px}
+.lv .st{font-size:17px;letter-spacing:1px}
+.lv .note{font-size:14px;font-weight:700;line-height:1.3}
+.lv .uses{font-size:12px;font-weight:600;opacity:.75;line-height:1.3}
+.lv .many{font-size:12px;font-weight:800;background:#e8fff1;border:2px solid var(--go);color:#0b6b37;border-radius:6px;padding:0 6px;width:max-content}
+.lv.locked{opacity:.5;cursor:not-allowed}
+
+/* play */
+.bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;color:#fff;margin-bottom:18px}
+.bar .where{font-weight:800;font-size:18px;line-height:1.25}
+.bar .where small{display:block;font-weight:600;opacity:.85;font-size:14px}
+.bar .sp{flex:1}
+.useschip{color:#fff;font-size:13px;font-weight:700;opacity:.9}
+.notechip{background:var(--sun);color:var(--ink);border:2.5px solid var(--ink);border-radius:8px;padding:2px 10px;font-weight:800;font-size:14px}
+.play{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:26px;align-items:start}
+@media (max-width:840px){.play{grid-template-columns:1fr}}
+.clues{display:grid;gap:12px}
+.recall{color:#fff;border:2.5px solid rgba(255,255,255,.6);border-radius:12px;padding:8px 12px}
+.recall summary{cursor:pointer;font-weight:800}
+.recall p{margin:6px 0 0;font-size:15px}
+.story{padding:14px 16px;font-size:18px;background:#fff8dc}
+.story b{display:block;font-size:13px;color:var(--street);margin-bottom:4px}
+.clue{position:relative;display:flex;gap:12px;align-items:flex-start;text-align:left;padding:12px 14px;border:3px solid var(--ink);border-radius:12px;background:var(--paper);box-shadow:4px 4px 0 var(--ink);font-size:18px;font-weight:600}
+.clue .box{flex:none;width:26px;height:26px;border:3px solid var(--ink);border-radius:7px;display:grid;place-items:center;font-weight:900;background:#fff;margin-top:1px}
+.clue.done{opacity:.6;box-shadow:2px 2px 0 var(--ink)}
+.clue.done .box{background:var(--go);color:#fff}
+.clue.done .tx{text-decoration:line-through;text-decoration-thickness:2px}
+.clue.auto{cursor:default}
+.clue.fail{border-color:var(--no);box-shadow:4px 4px 0 var(--no);opacity:1;background:#fff1f1}
+.clue.fail .tx{text-decoration:none}
+.clue .failtag{position:absolute;top:-12px;right:10px;background:var(--no);color:#fff;font-size:12px;font-weight:800;padding:1px 8px;border-radius:6px;border:2px solid var(--ink)}
+.pw{border-radius:5px;padding:0 3px;box-shadow:inset 0 -5px 0 var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.pw1{--c:var(--p1)}.pw2{--c:var(--p2)}.pw3{--c:var(--p3)}.pw4{--c:var(--p4)}
+.tip{color:#fff;font-size:14px;opacity:.85;margin:2px 0 0}
+
+/* the door scene */
+.scene{position:relative;background:var(--wall);border:3px solid var(--ink);border-radius:20px;box-shadow:8px 8px 0 var(--ink);padding:18px 16px 0;display:grid;justify-items:center;overflow:hidden}
+.scene::after{content:"";position:absolute;left:0;right:0;bottom:0;height:26px;background:var(--ground,rgba(0,0,0,.14));border-top:3px solid var(--ink)}
+.sign{background:var(--paper);border:3px solid var(--ink);border-radius:10px;padding:2px 14px;font-weight:900;font-size:16px;margin-bottom:12px;box-shadow:3px 3px 0 var(--ink);z-index:1}
+.frame{position:relative;width:min(340px,100%);aspect-ratio:3/4;background:var(--frame);border:4px solid var(--ink);padding:14px;perspective:1200px;z-index:1;margin-bottom:34px}
+.shape-round .frame{aspect-ratio:1/1}
+.shape-rect .frame{border-radius:16px}
+.shape-arch .frame{border-radius:200px 200px 16px 16px}
+.shape-round .frame{border-radius:50%}
+.doorway,.leaf{position:absolute;inset:14px;border:3px solid var(--ink)}
+.shape-rect .doorway,.shape-rect .leaf{border-radius:8px}
+.shape-arch .doorway,.shape-arch .leaf{border-radius:190px 190px 8px 8px}
+.shape-round .doorway,.shape-round .leaf{border-radius:50%}
+.doorway{background:radial-gradient(circle at 50% 40%,#fff9dc,#ffd987 55%,#f0a64a);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:14px;overflow:hidden}
+.shape-arch .doorway{padding-top:22%}
+.shape-round .doorway{padding:15%;gap:4px}
+.doorway .prize{font-size:clamp(46px,9vw,64px);line-height:1}
+.doorway .wstars{font-size:26px;letter-spacing:4px;color:#d49100;line-height:1}
+.doorway h3{margin:0;font-size:20px;font-weight:900;line-height:1.2}
+.doorway .code{font-family:var(--digits);font-size:22px;letter-spacing:4px}
+.doorway .others{font-size:13px;font-weight:700;line-height:1.3}
+.doorway .chips{display:flex;flex-wrap:wrap;gap:4px;justify-content:center}
+.doorway .chips span{font-family:var(--digits);font-size:12px;border:2px solid var(--ink);border-radius:6px;padding:0 5px;background:#fff}
+.doorway .again{background:none;border:0;text-decoration:underline;font-weight:700;font-size:14px;padding:2px}
+.nextdoor{display:flex;align-items:center;gap:10px;border:3px solid var(--ink);border-radius:12px;background:var(--paper);padding:6px 12px 6px 8px;font-weight:900;font-size:16px;box-shadow:3px 3px 0 var(--ink);margin-top:4px}
+.nextdoor .mini{width:30px;height:40px;padding:3px;border-width:2px}
+.nextdoor .mini.shape-round{width:38px;height:38px}
+.nextdoor:hover{background:var(--sun)}
+.doorway > *{opacity:0;transform:translateY(8px);transition:opacity .4s .25s,transform .4s .25s}
+.scene.open .doorway > *{opacity:1;transform:none}
+.leaf{background:var(--door);display:grid;place-items:center;z-index:2;overflow:hidden;transition:opacity .35s,transform .35s}
+.scene.open .leaf{opacity:0;transform:scale(1.04);pointer-events:none;visibility:hidden;transition:opacity .35s,transform .35s,visibility 0s .35s}
+.scene.shake .leaf{animation:shake .45s}
+@keyframes shake{20%{transform:translateX(-10px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(4px)}}
+.knob{position:absolute;right:16px;top:58%;width:18px;height:18px;border-radius:50%;background:var(--sun);border:3px solid var(--ink)}
+.shape-round .knob{display:none}
+.shape-arch .leaf .plate{margin-top:22%}
+
+/* door textures */
+.tex-planks .leaf{background:repeating-linear-gradient(90deg,var(--door) 0 36px,var(--door2) 36px 39px)}
+.tex-hplanks .leaf{background:repeating-linear-gradient(0deg,var(--door) 0 34px,var(--door2) 34px 37px)}
+.tex-panels .leaf{background:linear-gradient(var(--door2),var(--door2)) 50% 12%/62% 4px no-repeat,linear-gradient(var(--door2),var(--door2)) 50% 88%/62% 4px no-repeat,var(--door)}
+.tex-metal .leaf{background:radial-gradient(circle,var(--door2) 3px,transparent 4px) 0 0/30px 30px,linear-gradient(160deg,var(--door),var(--door2) 160%)}
+.tex-stripes .leaf{background:repeating-linear-gradient(90deg,var(--door) 0 28px,var(--door2) 28px 56px)}
+.tex-stars .leaf{background:radial-gradient(circle at 20% 30%,#fff 1.6px,transparent 2.6px) 0 0/38px 38px,radial-gradient(circle at 70% 70%,rgba(255,255,255,.6) 1.6px,transparent 2.6px) 0 0/52px 52px,var(--door)}
+.tex-ice .leaf{background:linear-gradient(130deg,transparent 0 18%,rgba(255,255,255,.75) 18% 22%,transparent 22% 55%,rgba(255,255,255,.55) 55% 58%,transparent 58%),linear-gradient(180deg,var(--door),var(--door2))}
+.tex-bars .leaf{background:repeating-linear-gradient(90deg,var(--door2) 0 12px,var(--door) 12px 46px)}
+.tex-barn .leaf{background:linear-gradient(to top right,transparent calc(50% - 5px),#fdf0d5 calc(50% - 5px) calc(50% + 5px),transparent calc(50% + 5px)),linear-gradient(to top left,transparent calc(50% - 5px),#fdf0d5 calc(50% - 5px) calc(50% + 5px),transparent calc(50% + 5px)),repeating-linear-gradient(90deg,var(--door) 0 30px,var(--door2) 30px 33px)}
+.tex-bands .leaf{background:linear-gradient(var(--frame),var(--frame)) 0 22%/100% 12px no-repeat,linear-gradient(var(--frame),var(--frame)) 0 78%/100% 12px no-repeat,repeating-linear-gradient(0deg,var(--door) 0 30px,var(--door2) 30px 33px)}
+.mini.tex-planks i,.mini.tex-hplanks i,.mini.tex-panels i,.mini.tex-metal i,.mini.tex-stripes i,.mini.tex-stars i,.mini.tex-ice i,.mini.tex-bars i,.mini.tex-barn i,.mini.tex-bands i{background:var(--door)}
+.mini.tex-stripes i{background:repeating-linear-gradient(90deg,var(--door) 0 6px,var(--door2) 6px 12px)}
+.mini.tex-planks i{background:repeating-linear-gradient(90deg,var(--door) 0 8px,var(--door2) 8px 9px)}
+.mini.shape-arch,.mini.shape-arch i{border-radius:40px 40px 4px 4px}
+.mini.shape-round,.mini.shape-round i{border-radius:50%}
+.mini.shape-rect,.mini.shape-rect i{border-radius:5px}
+
+/* the lock: four big windows, nothing else */
+.plate{position:relative;z-index:3;background:var(--paper);border:3px solid var(--ink);border-radius:14px;padding:8px;display:grid;grid-template-columns:repeat(4,1fr);gap:7px;width:min(250px,82%);box-shadow:3px 3px 0 rgba(0,0,0,.25)}
+.slot{display:grid;gap:3px;justify-items:stretch}
+.arr{border:2.5px solid var(--ink);background:#fff;border-radius:8px;font-weight:900;font-size:13px;line-height:1;padding:5px 0}
+.arr:active{background:var(--sun)}
+.win{display:grid;place-items:center;height:58px;font-family:var(--digits);font-size:34px;background:#fff;border:3px solid var(--ink);border-radius:9px;cursor:pointer;border-bottom:7px solid var(--c)}
+.slot:nth-child(1){--c:var(--p1)}.slot:nth-child(2){--c:var(--p2)}.slot:nth-child(3){--c:var(--p3)}.slot:nth-child(4){--c:var(--p4)}
+.slot.sel .win{background:#fffbe3;outline:3px solid var(--c);outline-offset:1px}
+.win.empty{color:#c5c7d6}
+.win.lockd{background:#e9fbe9}
+
+.panel{display:grid;gap:10px;margin-top:16px}
+.acts{display:flex;gap:10px}
+.acts .open{flex:1;font-size:21px;padding:10px}
+.meta{display:flex;justify-content:space-between;color:#fff;font-weight:700;font-size:14px}
+.msg{min-height:24px;font-weight:800;color:#fff;text-align:center}
+.winbox{padding:16px;display:grid;gap:10px;justify-items:center;text-align:center}
+.winbox .big{font-size:44px;letter-spacing:6px;color:#e0a800;line-height:1}
+.winbox h3{margin:0;font-size:24px;font-weight:900}
+.winbox .code{font-family:var(--digits);font-size:28px;letter-spacing:5px}
+.winbox .others{font-size:15px;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.chips span{font-family:var(--digits);font-size:15px;border:2px solid var(--ink);border-radius:7px;padding:1px 7px;background:#eef1ff}
+.winbox .row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+@media (prefers-reduced-motion:reduce){.leaf,.doorway > *{transition:none}.scene.shake .leaf{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+const DATA=[{"title":"ციფრები და მათი ადგილები","new":"ბოლო, შუაში, ნაპირებში","explain":"კოდს 4 ციფრი აქვს: პირველი, მეორე, მესამე და მეოთხე. მეოთხე ციფრს „ბოლოსაც“ ვეძახით. მეორე და მესამე ციფრი შუაში დგას, პირველი და ბოლო კი ნაპირებში.","example":"„შუაში დგას 4 და 7“ → _ 4 7 _ ან _ 7 4 _","levels":[{"n":"ციფრები რიგით","c":["პირველი ციფრი არის 4","მეორე ციფრი არის 7","მესამე ციფრი არის 1","მეოთხე ციფრი არის 9"],"p":["((a===4))","((b===7))","((c===1))","((d===9))"],"s":null,"sols":["4719"],"uses":[]},{"n":"პირობები არეულია","c":["მესამე ციფრი არის 0","პირველი ციფრი არის 9","მეოთხე ციფრი არის 6","მეორე ციფრი არის 2"],"p":["((c===0))","((a===9))","((d===6))","((b===2))"],"s":null,"sols":["9206"],"uses":[]},{"n":"ახალი სიტყვა: ბოლო","c":["მეორე ციფრი არის 5","ბოლო ციფრი არის 3","პირველი ციფრი არის 8","მესამე ციფრი არის 1"],"p":["((b===5))","((d===3))","((a===8))","((c===1))"],"s":null,"sols":["8513"],"uses":[]},{"n":"ახალი სიტყვა: შუაში","c":["პირველი ციფრი არის 1","შუაში დგას ციფრები 4 და 7","ბოლო ციფრი არის 9","მეორე ციფრი არის 7"],"p":["((a===1))","pairEq([b,c],[4,7])","((d===9))","((b===7))"],"s":null,"sols":["1749"],"uses":[]},{"n":"ახალი სიტყვა: ნაპირებში","c":["ნაპირებში დგას ციფრები 2 და 8","მეორე ციფრი არის 5","მესამე ციფრი არის 3","ბოლო ციფრი არის 2"],"p":["pairEq([a,d],[2,8])","((b===5))","((c===3))","((d===2))"],"s":null,"sols":["8532"],"uses":[]},{"n":"ყველაფერი ერთად","c":["შუაში დგას ციფრები 5 და 0","ნაპირებში დგას ციფრები 6 და 3","მეორე ციფრი არის 0","ბოლო ციფრი არის 6"],"p":["pairEq([b,c],[5,0])","pairEq([a,d],[6,3])","((b===0))","((d===6))"],"s":null,"sols":["3056"],"uses":[]}]},{"title":"ტოლობა","new":"ტოლია, ერთნაირია","explain":"„ტოლია“ ნიშნავს, რომ ორი ციფრი ერთნაირია. „შუაში ორივე ციფრი ერთნაირია“ ნიშნავს, რომ მეორე და მესამე ერთი და იგივე ციფრია.","example":"„ბოლო ციფრი პირველის ტოლია“ → 3 _ _ 3","levels":[{"n":"ახალი: ტოლობა","uses":[],"c":["ბოლო ციფრი არის 4","მესამე ციფრი არის 5","პირველი ციფრი არის 2","მესამე ციფრი მეორის ტოლია"],"p":["d===4","c===5","a===2","c===b"],"s":null,"sols":["2554"]},{"n":"ტოლობა","uses":[],"c":["შუაში დგას ციფრები 1 და 8","მეორე ციფრი პირველის ტოლია","მეორე ციფრი არის 1","ბოლო ციფრი არის 8"],"p":["pairEq([b,c],[1,8])","b===a","b===1","d===8"],"s":null,"sols":["1188"]},{"n":"შუაში ორივე ერთნაირია","uses":[],"c":["ნაპირებში დგას ციფრები 0 და 1","პირველი ციფრი არის 1","შუაში ორივე ციფრი ერთნაირია","მეორე ციფრი არის 5"],"p":["pairEq([a,d],[0,1])","a===1","b===c","b===5"],"s":null,"sols":["1550"]},{"n":"ნაპირებში ორივე ერთნაირია","uses":[],"c":["შუაში დგას ციფრები 1 და 9","პირველი ციფრი არის 1","ნაპირებში ორივე ციფრი ერთნაირია","მესამე ციფრი არის 1"],"p":["pairEq([b,c],[1,9])","a===1","a===d","c===1"],"s":null,"sols":["1911"]},{"n":"ტოლობა","uses":[],"c":["მესამე ციფრი მეორის ტოლია","მეორე ციფრი არის 8","ბოლო ციფრი არის 0","მეორე ციფრი პირველის ტოლია"],"p":["c===b","b===8","d===0","b===a"],"s":null,"sols":["8880"]},{"n":"შუაში ორივე ერთნაირია + ნაპირებში ორივე ერთნაირია","uses":[],"c":["შუაში ორივე ციფრი ერთნაირია","პირველი ციფრი არის 4","მეორე ციფრი არის 3","ნაპირებში ორივე ციფრი ერთნაირია"],"p":["b===c","a===4","b===3","a===d"],"s":null,"sols":["4334"]}]},{"title":"მომდევნო და წინა","new":"მომდევნო, წინა, 2-ით მეტი","explain":"მომდევნო რიცხვი 1-ით მეტია: 5-ის მომდევნოა 6. წინა რიცხვი 1-ით ნაკლებია: 5-ის წინაა 4. „2-ით მეტი“ ნიშნავს, რომ ვუმატებთ 2-ს.","example":"„მეორე ციფრი პირველის მომდევნოა“ → 3 4 _ _","levels":[{"n":"ახალი: მომდევნო","uses":["ტოლობა"],"c":["მესამე ციფრი ბოლოს მომდევნო რიცხვია","ნაპირებში დგას ციფრები 6 და 8","ბოლო ციფრი მეორის ტოლია","მეორე ციფრი არის 6"],"p":["c===d+1","pairEq([a,d],[6,8])","d===b","b===6"],"s":null,"sols":["8676"]},{"n":"წინა","uses":["ტოლობა"],"c":["ბოლო ციფრი არის 8","მეორე ციფრი პირველის წინა რიცხვია","მესამე ციფრი პირველის ტოლია","ნაპირებში დგას ციფრები 5 და 8"],"p":["d===8","b===a-1","c===a","pairEq([a,d],[5,8])"],"s":null,"sols":["5458"]},{"n":"რამდენით მეტი","uses":[],"c":["მესამე ციფრი არის 4","შუაში დგას ციფრები 1 და 4","ბოლო ციფრი მესამეზე 2-ით მეტია","პირველი ციფრი არის 9"],"p":["c===4","pairEq([b,c],[1,4])","d===c+2","a===9"],"s":null,"sols":["9146"]},{"n":"რამდენით ნაკლები","uses":["ტოლობა"],"c":["მეორე ციფრი პირველის ტოლია","მესამე ციფრი არის 6","შუაში დგას ციფრები 5 და 6","მეორე ციფრი ბოლოზე 3-ით ნაკლებია"],"p":["b===a","c===6","pairEq([b,c],[5,6])","b===d-3"],"s":null,"sols":["5568"]},{"n":"მომდევნო + რამდენით მეტი","uses":[],"c":["მეორე ციფრი არის 5","მესამე ციფრი ბოლოს მომდევნო რიცხვია","ნაპირებში დგას ციფრები 2 და 7","ბოლო ციფრი მეორეზე 2-ით მეტია"],"p":["b===5","c===d+1","pairEq([a,d],[2,7])","d===b+2"],"s":null,"sols":["2587"]},{"n":"წინა + რამდენით ნაკლები","uses":[],"c":["მესამე ციფრი პირველის წინა რიცხვია","პირველი ციფრი მეორეზე 2-ით ნაკლებია","ბოლო ციფრი არის 8","მესამე ციფრი არის 3"],"p":["c===a-1","a===b-2","d===8","c===3"],"s":null,"sols":["4638"]}]},{"title":"კენტი და ლუწი","new":"კენტი, ლუწი","explain":"კენტი ციფრებია 1, 3, 5, 7, 9. ლუწი ციფრებია 0, 2, 4, 6, 8. ყველაზე დიდი კენტი ციფრი 9-ია, ყველაზე პატარა ლუწი ციფრი კი 0.","example":"„შუაში დგას 3 და 8, მესამე ლუწია“ → _ 3 8 _","levels":[{"n":"ახალი: კენტი და ლუწი","uses":["ტოლობა","მომდევნო და წინა"],"c":["ბოლო ციფრი მესამის ტოლია","მეორე ციფრი ლუწია","მესამე ციფრი პირველზე 2-ით მეტია","მეორე ციფრი პირველის მომდევნო რიცხვია"],"p":["d===c","ev(b)","c===a+2","b===a+1"],"s":null,"sols":["1233","3455","5677","7899"]},{"n":"კენტი და ლუწი","uses":["მომდევნო და წინა"],"c":["მეორე ციფრი პირველზე 3-ით ნაკლებია","ნაპირებში დგას ციფრები 4 და 5","მეორე ციფრი ლუწია","მესამე ციფრი მეორეზე 2-ით მეტია"],"p":["b===a-3","pairEq([a,d],[4,5])","ev(b)","c===b+2"],"s":null,"sols":["5244"]},{"n":"ყველაზე დიდი და პატარა ციფრი","uses":["მომდევნო და წინა"],"c":["ბოლო ციფრი ყველაზე დიდი ლუწი ციფრია","პირველი ციფრი არის 8","მესამე ციფრი არის 2","პირველი ციფრი მეორეზე 2-ით მეტია"],"p":["d===8","a===8","c===2","a===b+2"],"s":null,"sols":["8628"]},{"n":"კენტი და ლუწი","uses":[],"c":["მეორე ციფრი ლუწია","ნაპირებში დგას ციფრები 5 და 8","ბოლო ციფრი კენტია","შუაში დგას ციფრები 4 და 5"],"p":["ev(b)","pairEq([a,d],[5,8])","odd(d)","pairEq([b,c],[4,5])"],"s":null,"sols":["8455"]},{"n":"ყველაზე დიდი და პატარა ციფრი + კენტი და ლუწი","uses":["მომდევნო და წინა"],"c":["მესამე ციფრი ყველაზე დიდი კენტი ციფრია","მეორე ციფრი ბოლოს მომდევნო რიცხვია","მეორე ციფრი კენტია","ნაპირებში დგას ციფრები 4 და 5"],"p":["c===9","b===d+1","odd(b)","pairEq([a,d],[4,5])"],"s":null,"sols":["5594"]},{"n":"კენტი და ლუწი","uses":[],"c":["ნაპირებში დგას ციფრები 2 და 3","შუაში დგას ციფრები 0 და 5","მეორე ციფრი კენტია","ბოლო ციფრი ლუწია"],"p":["pairEq([a,d],[2,3])","pairEq([b,c],[0,5])","odd(b)","ev(d)"],"s":null,"sols":["3502"]}]},{"title":"მეტია, ნაკლებია, შორის","new":"მეტია, ნაკლებია, შორის","explain":"„7-ზე მეტია“ ნიშნავს 8-ს ან 9-ს. „2-ზე ნაკლებია“ ნიშნავს 0-ს ან 1-ს. „2-სა და 4-ს შორის“ ნიშნავს 3-ს, თავად 2 და 4 არ ითვლება!","example":"„7-სა და 9-ს შორისაა“ → 8","levels":[{"n":"ახალი: მეტია","uses":["კენტი და ლუწი","მომდევნო და წინა"],"c":["შუაში დგას ციფრები 2 და 7","პირველი ციფრი ლუწია","მეორე ციფრი ბოლოზე 2-ით მეტია","მეორე ციფრი 2-ზე მეტია"],"p":["pairEq([b,c],[2,7])","ev(a)","b===d+2","b>2"],"s":null,"sols":["0725","2725","4725","6725","8725"]},{"n":"ნაკლებია","uses":[],"c":["მეორე ციფრი არის 8","შუაში დგას ციფრები 4 და 8","ნაპირებში დგას ციფრები 3 და 9","ბოლო ციფრი 4-ზე ნაკლებია"],"p":["b===8","pairEq([b,c],[4,8])","pairEq([a,d],[3,9])","d<4"],"s":null,"sols":["9843"]},{"n":"შორის","uses":["მომდევნო და წინა"],"c":["ბოლო ციფრი 3-სა და 7-ს შორისაა","მეორე ციფრი პირველის მომდევნო რიცხვია","მეორე ციფრი ბოლოზე 3-ით მეტია","შუაში დგას ციფრები 3 და 8"],"p":["(d>3&&d<7)","b===a+1","b===d+3","pairEq([b,c],[3,8])"],"s":null,"sols":["7835"]},{"n":"ციფრი ციფრზე მეტია","uses":["მომდევნო და წინა"],"c":["შუაში დგას ციფრები 0 და 9","ბოლო ციფრი მეორეზე მეტია","პირველი ციფრი არის 6","ბოლო ციფრი პირველზე 2-ით ნაკლებია"],"p":["pairEq([b,c],[0,9])","d>b","a===6","d===a-2"],"s":null,"sols":["6094"]},{"n":"ორ ციფრს შორის","uses":["ტოლობა","მომდევნო და წინა"],"c":["ნაპირებში ორივე ციფრი ერთნაირია","მესამე ციფრი პირველსა და მეორეს შორისაა","შუაში დგას ციფრები 7 და 8","მეორე ციფრი პირველზე 3-ით მეტია"],"p":["a===d","(c>Math.min(a,b)&&c<Math.max(a,b))","pairEq([b,c],[7,8])","b===a+3"],"s":null,"sols":["5875"]},{"n":"კენტი + შედარება + ციფრი ციფრზე ნაკლებია","uses":["მომდევნო და წინა"],"c":["პირველი ციფრი ლუწია და 6-ზე მეტია","მესამე ციფრი მეორეზე ნაკლებია","ბოლო ციფრი მეორის წინა რიცხვია","შუაში დგას ციფრები 1 და 6"],"p":["ev(a)&&a>6","c<b","d===b-1","pairEq([b,c],[1,6])"],"s":null,"sols":["8615"]}]},{"title":"„არ არის“","new":"არ არის","explain":"„არ არის“ გამორიცხავს. „არ არის კენტი“ ნიშნავს, რომ ლუწია. „არ არის 7“ ნიშნავს, რომ 7 ამოვშალეთ. „ტოლი არ არის“ ნიშნავს, რომ ციფრები განსხვავებულია.","example":"„6-სა და 9-ს შორისაა და არ არის 7“ → 8","levels":[{"n":"ახალი: არ არის კენტი/ლუწი","uses":["მეტი და ნაკლები","მომდევნო და წინა"],"c":["მესამე ციფრი არ არის კენტი","პირველი ციფრი 4-სა და 7-ს შორისაა","მეორე ციფრი ბოლოზე 2-ით მეტია","შუაში დგას ციფრები 3 და 6"],"p":["!odd(c)","(a>4&&a<7)","b===d+2","pairEq([b,c],[3,6])"],"s":null,"sols":["5361","6361"]},{"n":"არ არის","uses":["ტოლობა","მომდევნო და წინა"],"c":["პირველი ციფრი არ არის 5","ბოლო ციფრი მეორის ტოლია","შუაში დგას ციფრები 5 და 7","პირველი ციფრი ბოლოზე 2-ით ნაკლებია"],"p":["a!==5","d===b","pairEq([b,c],[5,7])","a===d-2"],"s":null,"sols":["3575"]},{"n":"ტოლი არ არის","uses":["მეტი და ნაკლები","მომდევნო და წინა"],"c":["შუაში დგას ციფრები 2 და 3","პირველი ციფრი 4-სა და 6-ს შორისაა","პირველი ციფრი ბოლოზე 3-ით მეტია","ბოლო ციფრი მეორის ტოლი არ არის"],"p":["pairEq([b,c],[2,3])","(a>4&&a<6)","a===d+3","d!==b"],"s":null,"sols":["5322"]},{"n":"„…და არ არის“","uses":["მომდევნო და წინა","მეტი და ნაკლები"],"c":["პირველი ციფრი 5-ზე ნაკლებია და არ არის 2","ბოლო ციფრი მეორის მომდევნო რიცხვია","მესამე ციფრი კენტია და 4-სა და 7-ს შორისაა","ნაპირებში დგას ციფრები 3 და 9"],"p":["a<5&&a!==2","d===b+1","odd(c)&&(c>4&&c<7)","pairEq([a,d],[3,9])"],"s":null,"sols":["3859"]},{"n":"ტოლი არ არის","uses":["მომდევნო და წინა","მეტი და ნაკლები"],"c":["შუაში დგას ციფრები 5 და 9","ბოლო ციფრი მესამის ტოლი არ არის","მეორე ციფრი პირველზე 2-ით ნაკლებია","ბოლო ციფრი პირველზე მეტია"],"p":["pairEq([b,c],[5,9])","d!==c","b===a-2","d>a"],"s":null,"sols":["7598"]},{"n":"„…და არ არის“ + არ არის კენტი/ლუწი","uses":["მეტი და ნაკლები"],"c":["მეორე ციფრი პირველსა და მესამეს შორისაა","მესამე ციფრი 3-ზე ნაკლებია და არ არის 1","ნაპირებში დგას ციფრები 2 და 3","პირველი ციფრი არ არის კენტი"],"p":["(b>Math.min(a,c)&&b<Math.max(a,c))","c<3&&c!==1","pairEq([a,d],[2,3])","!odd(a)"],"s":null,"sols":["2103"]}]},{"title":"ძნელი „არ არის“","new":"არც… არც…, არ არის ნაკლები","explain":"„არ არის 5-ზე ნაკლები“ ნიშნავს 5-ს ან მეტს (5, 6, 7, 8, 9), აქ 5-იც შედის! „არც 3-ია, არც 5“ ნიშნავს, რომ ორივე ამოვშალეთ. „არც მეტია, არც ნაკლებია 5-ზე“ ნიშნავს, რომ ზუსტად 5-ია.","example":"„არც 3-ია, არც 5, მაგრამ 2-სა და 6-ს შორისაა“ → 4","levels":[{"n":"ახალი: არ არის ნაკლები","uses":["„არ არის“","მომდევნო და წინა"],"c":["ბოლო ციფრი 6-ზე მეტია და არ არის 8","პირველი ციფრი არ არის 5-ზე ნაკლები","შუაში დგას ციფრები 3 და 9","მესამე ციფრი პირველის მომდევნო რიცხვია"],"p":["d>6&&d!==8","a>=5","pairEq([b,c],[3,9])","c===a+1"],"s":null,"sols":["8397","8399"]},{"n":"არ არის მეტი","uses":["მეტი და ნაკლები","მომდევნო და წინა"],"c":["მესამე ციფრი კენტია და 3-ზე ნაკლებია","ნაპირებში დგას ციფრები 1 და 4","მეორე ციფრი არ არის 3-ზე მეტი","პირველი ციფრი მეორის წინა რიცხვია"],"p":["odd(c)&&c<3","pairEq([a,d],[1,4])","b<=3","a===b-1"],"s":null,"sols":["1214"]},{"n":"არც მეტი, არც ნაკლები","uses":["კენტი და ლუწი","მეტი და ნაკლები","მომდევნო და წინა"],"c":["მესამე ციფრი არც მეტია, არც ნაკლებია 7-ზე","მეორე ციფრი ყველაზე პატარა კენტი ციფრია","პირველი ციფრი კენტია და 6-სა და 9-ს შორისაა","პირველი ციფრი ბოლოზე 2-ით ნაკლებია"],"p":["c===7","b===1","odd(a)&&(a>6&&a<9)","a===d-2"],"s":null,"sols":["7179"]},{"n":"არც… არც…","uses":["კენტი და ლუწი","მეტი და ნაკლები"],"c":["მესამე ციფრი ყველაზე დიდი კენტი ციფრია","პირველი ციფრი არც 4-ია, არც 9","მეორე ციფრი ლუწია და 5-სა და 8-ს შორისაა","ნაპირებში დგას ციფრები 4 და 7"],"p":["c===9","a!==4&&a!==9","ev(b)&&(b>5&&b<8)","pairEq([a,d],[4,7])"],"s":null,"sols":["7694"]},{"n":"არც… არც…, მაგრამ შორის","uses":["მეტი და ნაკლები","„არ არის“"],"c":["მესამე ციფრი არც 2-ია, არც 3, მაგრამ 1-სა და 5-ს შორისაა","მეორე ციფრი 5-სა და 7-ს შორისაა","ნაპირებში დგას ციფრები 0 და 5","ბოლო ციფრი 7-ზე ნაკლებია და არ არის 5"],"p":["c!==2&&c!==3&&c>1&&c<5","(b>5&&b<7)","pairEq([a,d],[0,5])","d<7&&d!==5"],"s":null,"sols":["5640"]},{"n":"არ არის მეტი","uses":["მეტი და ნაკლები","მომდევნო და წინა"],"c":["შუაში დგას ციფრები 2 და 5","მესამე ციფრი არ არის 3-ზე მეტი","ბოლო ციფრი კენტია და 3-სა და 7-ს შორისაა","ბოლო ციფრი პირველზე 2-ით მეტია"],"p":["pairEq([b,c],[2,5])","c<=3","odd(d)&&(d>3&&d<7)","d===a+2"],"s":null,"sols":["3525"]},{"n":"არც მეტი, არც ნაკლები ციფრზე + არც… არც…, მაგრამ შორის","uses":["მეტი და ნაკლები"],"c":["პირველი ციფრი არც მეტია, არც ნაკლებია ბოლოზე","შუაში დგას ციფრები 2 და 4","ბოლო ციფრი არც 2-ია, არც 5, მაგრამ 1-სა და 6-ს შორისაა","მეორე ციფრი პირველზე მეტია"],"p":["a===d","pairEq([b,c],[2,4])","d!==2&&d!==5&&d>1&&d<6","b>a"],"s":null,"sols":["3423"]}]},{"title":"ჯამი და სხვაობა","new":"ჯამი, სხვაობა","explain":"ჯამი: ორ რიცხვს ვკრებთ (3 და 4-ის ჯამი = 7). სხვაობა: დიდს ვაკლებთ პატარას (9 და 3-ის სხვაობა = 6).","example":"„მესამე პირველისა და მეორის ჯამია“ → 2 3 5 _","levels":[{"n":"ახალი: ჯამი","uses":["„არც… არც…“","მეტი და ნაკლები"],"c":["ბოლო ციფრი არც 3-ია, არც 6","პირველი ციფრი 5-ზე ნაკლებია","შუაში დგას ციფრები 0 და 9","პირველი ციფრი მეორისა და ბოლოს ჯამია"],"p":["d!==3&&d!==6","a<5","pairEq([b,c],[0,9])","a===b+d"],"s":null,"sols":["0090","1091","2092","4094"]},{"n":"სხვაობა","uses":["„არც… არც…“","მომდევნო და წინა"],"c":["მეორე ციფრი პირველისა და მესამის სხვაობაა","პირველი ციფრი არც 2-ია, არც 4, მაგრამ 1-სა და 6-ს შორისაა","ბოლო ციფრი მესამის წინა რიცხვია","ნაპირებში დგას ციფრები 0 და 3"],"p":["b===Math.abs(a-c)","a!==2&&a!==4&&a>1&&a<6","d===c-1","pairEq([a,d],[0,3])"],"s":null,"sols":["3210"]},{"n":"ჯამი რიცხვით","uses":["„არც… არც…“","„არ არის“"],"c":["მეორე ციფრი არც 3-ია, არც 7","პირველი ციფრი არ არის ლუწი","პირველისა და ბოლოს ჯამია 17","შუაში დგას ციფრები 3 და 9"],"p":["b!==3&&b!==7","!ev(a)","a+d===17","pairEq([b,c],[3,9])"],"s":null,"sols":["9938"]},{"n":"შუაში მდგომების ჯამი","uses":["მომდევნო და წინა","მეტი და ნაკლები","„არ არის“"],"c":["პირველი ციფრი ბოლოზე 2-ით ნაკლებია","მესამე ციფრი კენტია და 4-სა და 8-ს შორისაა","პირველი ციფრი 6-ზე მეტია და არ არის 8","შუაში მდგომი ციფრების ჯამია 16"],"p":["a===d-2","odd(c)&&(c>4&&c<8)","a>6&&a!==8","b+c===16"],"s":null,"sols":["7979"]},{"n":"ჯამი + სხვაობა რიცხვით","uses":["„არ არის“"],"c":["პირველი ციფრი მეორისა და მესამის ჯამია","შუაში დგას ციფრები 0 და 8","მესამისა და ბოლოს სხვაობაა 6","მესამე ციფრი 8-ზე ნაკლებია და არ არის 3"],"p":["a===b+c","pairEq([b,c],[0,8])","Math.abs(c-d)===6","c<8&&c!==3"],"s":null,"sols":["8806"]},{"n":"ნაპირების ჯამი + სხვაობა","uses":["„არც… არც…“","კენტი და ლუწი"],"c":["ნაპირებში მდგომი ციფრების ჯამია 14","ბოლო ციფრი არც 6-ია, არც 8, მაგრამ 4-სა და 9-ს შორისაა","პირველი ციფრი მეორისა და ბოლოს სხვაობაა","მესამე ციფრი ყველაზე დიდი ლუწი ციფრია"],"p":["a+d===14","d!==6&&d!==8&&d>4&&d<9","a===Math.abs(b-d)","c===8"],"s":null,"sols":["7087"]}]},{"title":"სიტყვა „ყველა“","new":"ყველა ციფრი, კოდში არ არის","explain":"„ყველა ციფრი“ ოთხივე ციფრზე ვრცელდება. „კოდში არ არის 0 და 5“ ნიშნავს, რომ 0 და 5 არცერთ ადგილზე არ დგას.","example":"„ყველა ციფრი 5-ზე მეტია“ → მხოლოდ 6, 7, 8, 9","levels":[{"n":"ახალი: ყველა ლუწი ან კენტი","uses":["„არც… არც…“","„არ არის“"],"c":["ბოლო ციფრი არც 3-ია, არც 4","ნაპირებში დგას ციფრები 4 და 6","ყველა ციფრი ლუწია","მეორე ციფრი 4-ზე ნაკლებია და არ არის 0"],"p":["d!==3&&d!==4","pairEq([a,d],[4,6])","[a,b,c,d].every(ev)","b<4&&b!==0"],"s":null,"sols":["4206","4226","4246","4266","4286"]},{"n":"ყველა მეტია","uses":["ჯამი და სხვაობა","მეტი და ნაკლები","„არც… არც…“"],"c":["პირველისა და ბოლოს სხვაობაა 3","პირველი ციფრი მეორესა და მესამეს შორისაა","ყველა ციფრი 4-ზე მეტია","მეორე ციფრი არც 5-ია, არც 7, მაგრამ 3-სა და 8-ს შორისაა"],"p":["Math.abs(a-d)===3","(a>Math.min(b,c)&&a<Math.max(b,c))","Math.min(a,b,c,d)>4","b!==5&&b!==7&&b>3&&b<8"],"s":null,"sols":["8695"]},{"n":"ყველა ნაკლებია","uses":["ჯამი და სხვაობა","„არც… არც…“","მეტი და ნაკლები"],"c":["ყველა ციფრი 4-ზე ნაკლებია","მეორე ციფრი პირველისა და მესამის ჯამია","პირველი ციფრი არც 2-ია, არც 4, მაგრამ 1-სა და 6-ს შორისაა","ბოლო ციფრი ლუწია და 1-სა და 4-ს შორისაა"],"p":["Math.max(a,b,c,d)<4","b===a+c","a!==2&&a!==4&&a>1&&a<6","ev(d)&&(d>1&&d<4)"],"s":null,"sols":["3302"]},{"n":"კოდში არ არის","uses":["„არც… არც…“","ჯამი და სხვაობა"],"c":["ნაპირებში დგას ციფრები 6 და 8","კოდში არ არის ციფრი 0","მესამე ციფრი არ არის 1-ზე მეტი","მეორისა და ბოლოს ჯამია 17"],"p":["pairEq([a,d],[6,8])","![a,b,c,d].includes(0)","c<=1","b+d===17"],"s":null,"sols":["6918"]},{"n":"ყველა ლუწი ან კენტი + კოდში არ არის ორი ციფრი","uses":["ჯამი და სხვაობა","მეტი და ნაკლები"],"c":["ყველა ციფრი კენტია","პირველისა და მეორის ჯამია 2","მესამე ციფრი პირველსა და ბოლოს შორისაა","კოდში არ არის ციფრები 3 და 7"],"p":["[a,b,c,d].every(odd)","a+b===2","(c>Math.min(a,d)&&c<Math.max(a,d))","![a,b,c,d].includes(3)&&![a,b,c,d].includes(7)"],"s":null,"sols":["1159"]},{"n":"კოდში არ არის + ყველა მეტია","uses":["მომდევნო და წინა","ჯამი და სხვაობა"],"c":["პირველი ციფრი მეორის მომდევნო რიცხვია","მესამისა და ბოლოს ჯამია 12","კოდში არ არის ციფრი 7","ყველა ციფრი 5-ზე მეტია"],"p":["a===b+1","c+d===12","![a,b,c,d].includes(7)","Math.min(a,b,c,d)>5"],"s":null,"sols":["9866"]}]},{"title":"სიტყვა „გარდა“","new":"გარდა","explain":"„გარდა“ გამონაკლისს ნიშნავს. „ყველა ციფრი ლუწია, გარდა მესამისა“: პირველი, მეორე და ბოლო ლუწია, მესამე კი კენტია.","example":"„ყველა 5-ზე მეტია, გარდა ბოლოსი“ → ბოლო 5 ან ნაკლებია","levels":[{"n":"ახალი: კენტი/ლუწი, გარდა ერთისა","uses":["მეტი და ნაკლები","ჯამი და სხვაობა","„ყველა“"],"c":["მესამე ციფრი კენტია და 6-სა და 9-ს შორისაა","მეორისა და ბოლოს ჯამია 3","კოდში არ არის ციფრები 1 და 5","ყველა ციფრი კენტია, გარდა ბოლოსი"],"p":["odd(c)&&(c>6&&c<9)","b+d===3","![a,b,c,d].includes(1)&&![a,b,c,d].includes(5)","odd(a)&&odd(b)&&odd(c)&&!(odd(d))"],"s":null,"sols":["3370","7370","9370"]},{"n":"მეტი, გარდა ერთისა","uses":["მეტი და ნაკლები","„არც… არც…“"],"c":["მეორე ციფრი ლუწია და 6-ზე ნაკლებია","ყველა ციფრი 3-ზე მეტია, გარდა ბოლოსი","მესამე ციფრი არც 3-ია, არც 5, მაგრამ 1-სა და 6-ს შორისაა","ნაპირებში დგას ციფრები 1 და 7"],"p":["ev(b)&&b<6","a>3&&b>3&&c>3&&!(d>3)","c!==3&&c!==5&&c>1&&c<6","pairEq([a,d],[1,7])"],"s":null,"sols":["7441"]},{"n":"ნაკლები, გარდა ერთისა","uses":["„არც… არც…“","ჯამი და სხვაობა"],"c":["შუაში დგას ციფრები 0 და 4","ბოლო ციფრი არც 1-ია, არც 2","პირველისა და მესამის ჯამია 5","ყველა ციფრი 3-ზე ნაკლებია, გარდა მესამისა"],"p":["pairEq([b,c],[0,4])","d!==1&&d!==2","a+c===5","a<3&&b<3&&d<3&&!(c<3)"],"s":null,"sols":["1040"]},{"n":"ტოლი, გარდა ერთისა","uses":["„ყველა“","მეტი და ნაკლები","ჯამი და სხვაობა"],"c":["კოდში არ არის ციფრები 0 და 6","ყველა ციფრი ტოლია, გარდა მესამისა","მეორე ციფრი კენტია და 2-ზე მეტია","პირველისა და მესამის ჯამია 5"],"p":["![a,b,c,d].includes(0)&&![a,b,c,d].includes(6)","a===b&&b===d&&c!==a","odd(b)&&b>2","a+c===5"],"s":null,"sols":["3323"]},{"n":"კენტი/ლუწი, გარდა ერთისა","uses":["„არც… არც…“","ჯამი და სხვაობა"],"c":["პირველი ციფრი არც 3-ია, არც 4, მაგრამ 2-სა და 7-ს შორისაა","მეორისა და ბოლოს ჯამია 10","შუაში დგას ციფრები 0 და 5","ყველა ციფრი კენტია, გარდა მესამისა"],"p":["a!==3&&a!==4&&a>2&&a<7","b+d===10","pairEq([b,c],[0,5])","odd(a)&&odd(b)&&odd(d)&&!(odd(c))"],"s":null,"sols":["5505"]},{"n":"მეტი, გარდა ერთისა","uses":["ჯამი და სხვაობა","„არ არის“"],"c":["ნაპირებში მდგომი ციფრების ჯამია 16","ყველა ციფრი 6-ზე მეტია, გარდა მესამისა","ბოლო ციფრი 4-სა და 8-ს შორისაა და არ არის 6","შუაში დგას ციფრები 1 და 9"],"p":["a+d===16","a>6&&b>6&&d>6&&!(c>6)","(d>4&&d<8)&&d!==6","pairEq([b,c],[1,9])"],"s":null,"sols":["9917"]}]},{"title":"განმეორება","new":"არ მეორდება, სარკული კოდი","explain":"„არცერთი ციფრი არ მეორდება“: ყველა ციფრი სხვადასხვაა. „მხოლოდ 2 განსხვავებული ციფრი“: კოდი ორი ციფრისგან შედგება (მაგ. 3388). სარკული კოდი წინიდან და უკნიდან ერთნაირად იკითხება (მაგ. 2442).","example":"„სარკულია, პირველი 3, მეორე 6“ → 3663","levels":[{"n":"ახალი: არ მეორდება","uses":["„გარდა“","ჯამი და სხვაობა","„არ არის“"],"c":["არცერთი ციფრი არ მეორდება","ყველა ციფრი 3-ზე ნაკლებია, გარდა ბოლოსი","მესამისა და ბოლოს სხვაობაა 8","მესამე ციფრი კენტია და არ არის 5"],"p":["new Set([a,b,c,d]).size===4","a<3&&b<3&&c<3&&!(d<3)","Math.abs(c-d)===8","odd(c)&&c!==5"],"s":null,"sols":["0219","2019"]},{"n":"მხოლოდ 2 ციფრი","uses":["„არც… არც…“","„არ არის“","ჯამი და სხვაობა"],"c":["მესამე ციფრი არც 4-ია, არც 5, მაგრამ 1-სა და 6-ს შორისაა","კოდში მხოლოდ 2 განსხვავებული ციფრია","ბოლო ციფრი 6-ზე ნაკლებია და არ არის 3","პირველისა და მეორის ჯამია 12"],"p":["c!==4&&c!==5&&c>1&&c<6","new Set([a,b,c,d]).size===2","d<6&&d!==3","a+b===12"],"s":null,"sols":["6622"]},{"n":"სარკული კოდი","uses":["ჯამი და სხვაობა","„ყველა“","„არც… არც…“"],"c":["მესამისა და ბოლოს ჯამია 9","კოდი წინიდან და უკნიდან ერთნაირად იკითხება","კოდში არ არის ციფრები 5 და 7","პირველი ციფრი არც 2-ია, არც 3, მაგრამ 0-სა და 5-ს შორისაა"],"p":["c+d===9","a===d&&b===c","![a,b,c,d].includes(5)&&![a,b,c,d].includes(7)","a!==2&&a!==3&&a>0&&a<5"],"s":null,"sols":["1881"]},{"n":"ციფრი ორჯერ","uses":["ჯამი და სხვაობა","მეტი და ნაკლები","მომდევნო და წინა"],"c":["მეორისა და მესამის ჯამია 10","მესამე ციფრი ლუწია და 2-სა და 5-ს შორისაა","პირველი ციფრი მეორის წინა რიცხვია","ციფრი 6 კოდში ზუსტად ორჯერ გვხვდება"],"p":["b+c===10","ev(c)&&(c>2&&c<5)","a===b-1","[a,b,c,d].filter(v=>v===6).length===2"],"s":null,"sols":["5646"]},{"n":"სარკული კოდი + მხოლოდ 2 ციფრი","uses":["მეტი და ნაკლები","ჯამი და სხვაობა"],"c":["კოდი წინიდან და უკნიდან ერთნაირად იკითხება","კოდში მხოლოდ 2 განსხვავებული ციფრია","მესამე ციფრი 5-სა და 8-ს შორისაა","პირველისა და მესამის ჯამია 14"],"p":["a===d&&b===c","new Set([a,b,c,d]).size===2","(c>5&&c<8)","a+c===14"],"s":null,"sols":["8668"]},{"n":"მხოლოდ 2 ციფრი + ციფრი ორჯერ","uses":["„ყველა“","ჯამი და სხვაობა"],"c":["კოდში მხოლოდ 2 განსხვავებული ციფრია","კოდში არ არის ციფრები 1 და 6","პირველისა და მესამის ჯამია 6","ციფრი 0 კოდში ზუსტად ორჯერ გვხვდება"],"p":["new Set([a,b,c,d]).size===2","![a,b,c,d].includes(1)&&![a,b,c,d].includes(6)","a+c===6","[a,b,c,d].filter(v=>v===0).length===2"],"s":null,"sols":["3030"]}]},{"title":"ძნელი ადგილის სიტყვები","new":"ბოლოსწინა, გვერდით, ლუწი ადგილი","explain":"ბოლოსწინა და ბოლოდან მეორე ერთი და იგივეა, მესამე ციფრი. „მეორე ციფრის გვერდით“ დგას პირველი და მესამე. ლუწ ადგილებზე დგას მე-2 და მე-4 ციფრი, კენტ ადგილებზე 1-ლი და მე-3. ფრთხილად: ლუწი ადგილი და ლუწი ციფრი სხვადასხვა რამაა!","example":"„ბოლოსწინა ციფრი არის 4“ → _ _ 4 _","levels":[{"n":"ახალი: ბოლოსწინა","uses":["ჯამი და სხვაობა","„გარდა“","„არც… არც…“"],"c":["ნაპირებში მდგომი ციფრების ჯამია 17","ბოლოსწინა ციფრი 4-სა და 8-ს შორისაა","ყველა ციფრი 5-ზე მეტია, გარდა მესამისა","მეორე ციფრი არც 1-ია, არც 9"],"p":["a+d===17","(c>4&&c<8)","a>5&&b>5&&d>5&&!(c>5)","b!==1&&b!==9"],"s":null,"sols":["8659","8759","8859","9658","9758","9858"]},{"n":"ლუწი და კენტი ადგილები","uses":["მომდევნო და წინა","„არც… არც…“"],"c":["ბოლო ციფრი მესამეზე 3-ით მეტია","ნაპირებში დგას ციფრები 4 და 9","ლუწ ადგილებზე მდგომი ციფრები ტოლია","მეორე ციფრი არც 3-ია, არც 6, მაგრამ 2-სა და 7-ს შორისაა"],"p":["d===c+3","pairEq([a,d],[4,9])","b===d","b!==3&&b!==6&&b>2&&b<7"],"s":null,"sols":["9414"]},{"n":"გვერდით მდგომი","uses":["„ყველა“","მეტი და ნაკლები","ჯამი და სხვაობა"],"c":["კოდში არ არის ციფრები 0 და 7","პირველი ციფრი კენტია და 6-ზე მეტია","მესამე ციფრის გვერდით დგას ციფრები 2 და 8","მეორისა და მესამის ჯამია 6"],"p":["![a,b,c,d].includes(0)&&![a,b,c,d].includes(7)","odd(a)&&a>6","pairEq([b,d],[2,8])","b+c===6"],"s":null,"sols":["9248"]},{"n":"ლუწი და კენტი ადგილები","uses":["მეტი და ნაკლები","განმეორება","„არ არის“"],"c":["ლუწ ადგილებზე მდგომი ციფრები ლუწია","პირველი ციფრი კენტია და 5-სა და 9-ს შორისაა","ციფრი 0 კოდში ზუსტად ორჯერ გვხვდება","მეორე ციფრი 4-ზე ნაკლებია და არ არის 0"],"p":["ev(b)&&ev(d)","odd(a)&&(a>5&&a<9)","[a,b,c,d].filter(v=>v===0).length===2","b<4&&b!==0"],"s":null,"sols":["7200"]},{"n":"ბოლოსწინა + გვერდით მდგომი","uses":["მომდევნო და წინა","„გარდა“"],"c":["მესამე ციფრი პირველზე 3-ით ნაკლებია","ყველა ციფრი 5-ზე ნაკლებია, გარდა ბოლოსი","ბოლოსწინა ციფრი 0-სა და 4-ს შორისაა","მესამე ციფრის გვერდით დგას ციფრები 0 და 7"],"p":["c===a-3","a<5&&b<5&&c<5&&!(d<5)","(c>0&&c<4)","pairEq([b,d],[0,7])"],"s":null,"sols":["4017"]},{"n":"გვერდით მდგომი + ლუწი და კენტი ადგილები","uses":["„ყველა“","ჯამი და სხვაობა"],"c":["კოდში არ არის ციფრები 3 და 8","მესამე ციფრის გვერდით დგას ციფრები 5 და 7","კენტ ადგილებზე მდგომი ციფრები ტოლია","პირველისა და მეორის ჯამია 8"],"p":["![a,b,c,d].includes(3)&&![a,b,c,d].includes(8)","pairEq([b,d],[5,7])","a===c","a+b===8"],"s":null,"sols":["1715"]}]},{"title":"კიბეები","new":"ზრდა, კლება, ნახტომები","explain":"„ციფრები იზრდება“: ყოველი შემდეგი ციფრი წინაზე დიდია (1 3 6 8). „ციფრები კლებულობს“: ყოველი შემდეგი პატარაა (9 6 4 1). „წინაზე 2-ით მეტია“: ყოველ ჯერზე +2 (1 3 5 7).","example":"„ყოველი ციფრი წინაზე 2-ით მეტია, პირველი 1“ → 1357","levels":[{"n":"ახალი: ზრდა","uses":["„არც… არც…“","მეტი და ნაკლები","ადგილის სიტყვები"],"c":["ყოველი შემდეგი ციფრი წინაზე დიდია","მეორე ციფრი არც 2-ია, არც 5","ბოლო ციფრი 3-სა და 7-ს შორისაა","მეორე ციფრის გვერდით დგას ციფრები 1 და 4"],"p":["a<b&&b<c&&c<d","b!==2&&b!==5","(d>3&&d<7)","pairEq([a,c],[1,4])"],"s":null,"sols":["1345","1346"]},{"n":"კლება","uses":["„გარდა“","მეტი და ნაკლები","ადგილის სიტყვები"],"c":["ყველა ციფრი ლუწია, გარდა მესამისა","ყოველი შემდეგი ციფრი წინაზე პატარაა","მეორე ციფრი ლუწია და 4-სა და 8-ს შორისაა","ბოლოდან მეორე ციფრი 0-სა და 3-ს შორისაა"],"p":["ev(a)&&ev(b)&&ev(d)&&!(ev(c))","a>b&&b>c&&c>d","ev(b)&&(b>4&&b<8)","(c>0&&c<3)"],"s":null,"sols":["8610"]},{"n":"ერთნაირი ნაბიჯი ზემოთ","uses":["ადგილის სიტყვები","მეტი და ნაკლები","„ყველა“"],"c":["ბოლოდან მეორე ციფრი 6-ზე ნაკლებია","ყოველი შემდეგი ციფრი წინაზე 1-ით მეტია","პირველი ციფრი ლუწია და 6-ზე ნაკლებია","კოდში არ არის ციფრები 0 და 9"],"p":["c<6","b===a+1&&c===b+1&&d===c+1","ev(a)&&a<6","![a,b,c,d].includes(0)&&![a,b,c,d].includes(9)"],"s":null,"sols":["2345"]},{"n":"ერთნაირი ნაბიჯი ქვემოთ","uses":["ადგილის სიტყვები","„არ არის“","„არც… არც…“"],"c":["ყოველი შემდეგი ციფრი წინაზე 1-ით ნაკლებია","ბოლოდან მეორე ციფრი 7-ზე ნაკლებია","მეორე ციფრი ლუწია და არ არის 6","პირველი ციფრი არც 3-ია, არც 7"],"p":["b===a-1&&c===b-1&&d===c-1","c<7","ev(b)&&b!==6","a!==3&&a!==7"],"s":null,"sols":["5432"]},{"n":"ზრდა","uses":["ადგილის სიტყვები","„არც… არც…“","ჯამი და სხვაობა"],"c":["მესამე ციფრის გვერდით დგას ციფრები 3 და 7","მესამე ციფრი არც 0-ია, არც 5","ბოლო ციფრი პირველისა და მესამის ჯამია","ყოველი შემდეგი ციფრი წინაზე დიდია"],"p":["pairEq([b,d],[3,7])","c!==0&&c!==5","d===a+c","a<b&&b<c&&c<d"],"s":null,"sols":["1367"]},{"n":"კლება","uses":["„ყველა“","ჯამი და სხვაობა","ადგილის სიტყვები"],"c":["ყოველი შემდეგი ციფრი წინაზე პატარაა","კოდში არ არის ციფრი 8","პირველისა და მესამის სხვაობაა 5","მესამე ციფრის გვერდით დგას ციფრები 1 და 4"],"p":["a>b&&b>c&&c>d","![a,b,c,d].includes(8)","Math.abs(a-c)===5","pairEq([b,d],[1,4])"],"s":null,"sols":["7421"]}]},{"title":"ორმაგი, ნახევარი, ნამრავლი","new":"2-ჯერ მეტი, ნახევარი, ნამრავლი","explain":"„2-ჯერ მეტი“ ნიშნავს, რომ ვამრავლებთ 2-ზე (3 → 6). „ნახევარი“ ნიშნავს, რომ ვყოფთ 2-ზე (8 → 4). „ნამრავლი“ ორი რიცხვის გამრავლების შედეგია (3 და 4-ის ნამრავლი = 12).","example":"„მეორე პირველზე 2-ჯერ მეტია, პირველი 3“ → 3 6 _ _","levels":[{"n":"ახალი: 2-ჯერ მეტი","uses":["ჯამი და სხვაობა","„ყველა“","„არც… არც…“"],"c":["მესამისა და ბოლოს ჯამია 13","კოდში არ არის ციფრები 3 და 9","ბოლო ციფრი პირველზე 2-ჯერ მეტია","მეორე ციფრი არ არის 5-ზე მეტი"],"p":["c+d===13","![a,b,c,d].includes(3)&&![a,b,c,d].includes(9)","d===2*a","b<=5"],"s":null,"sols":["4058","4158","4258","4458","4558"]},{"n":"ნახევარი","uses":["„არ არის“","ჯამი და სხვაობა","მომდევნო და წინა"],"c":["მეორე ციფრი არ არის 2","პირველისა და მესამის ჯამია 16","ბოლო ციფრი მესამეზე 3-ით ნაკლებია","მეორე ციფრი ბოლოს ნახევარია"],"p":["b!==2","a+c===16","d===c-3","2*b===d"],"s":null,"sols":["7396"]},{"n":"ნამრავლი რიცხვით","uses":["მეტი და ნაკლები","ადგილის სიტყვები"],"c":["შუაში დგას ციფრები 3 და 8","პირველისა და ბოლოს ნამრავლია 27","პირველი ციფრი კენტია და 1-სა და 5-ს შორისაა","ბოლოდან მეორე ციფრი ლუწია"],"p":["pairEq([b,c],[3,8])","a*d===27","odd(a)&&(a>1&&a<5)","ev(c)"],"s":null,"sols":["3389"]},{"n":"ნამრავლი ციფრად","uses":["მომდევნო და წინა","„ყველა“","ადგილის სიტყვები"],"c":["ბოლო ციფრი პირველზე 2-ით მეტია","მეორე ციფრი პირველისა და ბოლოს ნამრავლია","კოდში არ არის ციფრები 0 და 8","ბოლოდან მეორე ციფრი 2-ზე ნაკლებია"],"p":["d===a+2","b===a*d","![a,b,c,d].includes(0)&&![a,b,c,d].includes(8)","c<2"],"s":null,"sols":["1313"]},{"n":"2-ჯერ მეტი + ნახევარი","uses":["ადგილის სიტყვები","ჯამი და სხვაობა"],"c":["ბოლოსწინა ციფრი 0-სა და 4-ს შორისაა","პირველი ციფრი მესამეზე 2-ჯერ მეტია","ბოლო ციფრი მეორის ნახევარია","შუაში მდგომი ციფრების ჯამია 2"],"p":["(c>0&&c<4)","a===2*c","2*d===b","b+c===2"],"s":null,"sols":["4020"]},{"n":"ნახევარი + ნამრავლი რიცხვით","uses":["განმეორება","„არ არის“"],"c":["პირველი ციფრი მესამის ნახევარია","პირველისა და ბოლოს ნამრავლია 5","არცერთი ციფრი არ მეორდება","მეორე ციფრი 4-სა და 8-ს შორისაა და არ არის 7"],"p":["2*a===c","a*d===5","new Set([a,b,c,d]).size===4","(b>4&&b<8)&&b!==7"],"s":null,"sols":["1625"]}]},{"title":"უდიდესი და უმცირესი","new":"ყველაზე დიდი / პატარა კოდში","explain":"„კოდში ყველაზე დიდია“ ნიშნავს, რომ ეს ციფრი დანარჩენ სამ ციფრზე დიდია. „ყველაზე პატარა“ ნიშნავს, რომ დანარჩენ სამზე პატარაა. ჯერ იპოვე ცნობილი ციფრები და მერე შეადარე!","example":"4 2 _ 7 და მესამე ყველაზე დიდია → მესამე 8-ია ან 9","levels":[{"n":"ახალი: ყველაზე დიდი","uses":["მეტი და ნაკლები","ორმაგი და ნამრავლი","„არც… არც…“"],"c":["მეორე ციფრი კენტია და 4-სა და 7-ს შორისაა","პირველისა და ბოლოს ნამრავლია 6","პირველი ციფრი არც 2-ია, არც 3","მესამე ციფრი კოდში ყველაზე დიდია"],"p":["odd(b)&&(b>4&&b<7)","a*d===6","a!==2&&a!==3","c>Math.max(a,b,d)"],"s":null,"sols":["1576","1586","1596","6571","6581","6591"]},{"n":"ყველაზე პატარა","uses":["„არც… არც…“","მეტი და ნაკლები","ადგილის სიტყვები"],"c":["მეორე ციფრი არ არის 3-ზე მეტი","მეორე ციფრი ბოლოზე მეტია","პირველი ციფრი კოდში ყველაზე პატარაა","მეორე ციფრის გვერდით დგას ციფრები 1 და 2"],"p":["b<=3","b>d","a<Math.min(b,c,d)","pairEq([a,c],[1,2])"],"s":null,"sols":["1322"]},{"n":"ყველაზე პატარა + ყველაზე დიდი","uses":["ორმაგი და ნამრავლი","ადგილის სიტყვები"],"c":["ბოლო ციფრი პირველის ნახევარია","ბოლოსწინა ციფრი 1-სა და 4-ს შორისაა","ბოლო ციფრი კოდში ყველაზე პატარაა","პირველი ციფრი კოდში ყველაზე დიდია"],"p":["2*d===a","(c>1&&c<4)","d<Math.min(a,b,c)","a>Math.max(b,c,d)"],"s":null,"sols":["4332"]},{"n":"ყველაზე დიდი","uses":["ადგილის სიტყვები","მომდევნო და წინა","ჯამი და სხვაობა"],"c":["მეორე ციფრი კოდში ყველაზე დიდია","ბოლოდან მეორე ციფრი კენტია","ბოლო ციფრი მესამეზე 2-ით ნაკლებია","პირველისა და მესამის ჯამია 15"],"p":["b>Math.max(a,c,d)","odd(c)","d===c-2","a+c===15"],"s":null,"sols":["8975"]},{"n":"ყველაზე პატარა","uses":["ადგილის სიტყვები","ჯამი და სხვაობა","მეტი და ნაკლები"],"c":["ბოლოსწინა ციფრი 4-სა და 6-ს შორისაა","ბოლო ციფრი კოდში ყველაზე პატარაა","პირველისა და ბოლოს ჯამია 4","მეორე ციფრი 2-ზე ნაკლებია"],"p":["(c>4&&c<6)","d<Math.min(a,b,c)","a+d===4","b<2"],"s":null,"sols":["4150"]},{"n":"ყველაზე პატარა + ყველაზე დიდი","uses":["ორმაგი და ნამრავლი"],"c":["პირველისა და ბოლოს ნამრავლია 18","პირველი ციფრი კოდში ყველაზე პატარაა","შუაში დგას ციფრები 5 და 9","მესამე ციფრი კოდში ყველაზე დიდია"],"p":["a*d===18","a<Math.min(b,c,d)","pairEq([b,c],[5,9])","c>Math.max(a,b,d)"],"s":null,"sols":["3596"]}]},{"title":"დიდი ჯამები","new":"სამი და ოთხი ციფრის ჯამი","explain":"„ოთხივე ციფრის ჯამი“ ნიშნავს: პირველი + მეორე + მესამე + მეოთხე. „პირველი ორის ჯამი ბოლო ორის ჯამის ტოლია“: 2 + 5 = 3 + 4.","example":"ჯამი 10, ცნობილია 2, 4, 1 → ბოლო 10 − 7 = 3","levels":[{"n":"ახალი: ოთხის ჯამი","uses":["„არც… არც…“","მეტი და ნაკლები","განმეორება"],"c":["პირველი ციფრი არც 1-ია, არც 2, მაგრამ 0-სა და 5-ს შორისაა","ოთხივე ციფრის ჯამია 4","მესამე ციფრი ლუწია და 7-ზე ნაკლებია","ციფრი 0 კოდში ზუსტად ორჯერ გვხვდება"],"p":["a!==1&&a!==2&&a>0&&a<5","a+b+c+d===4","ev(c)&&c<7","[a,b,c,d].filter(v=>v===0).length===2"],"s":null,"sols":["3001","3100"]},{"n":"პირველი სამის ჯამი","uses":["მეტი და ნაკლები","ადგილის სიტყვები","„არც… არც…“"],"c":["პირველი ციფრი 4-სა და 6-ს შორისაა","მესამე ციფრის გვერდით დგას ციფრები 7 და 9","პირველი სამი ციფრის ჯამია 20","ბოლო ციფრი არც 5-ია, არც 9"],"p":["(a>4&&a<6)","pairEq([b,d],[7,9])","a+b+c===20","d!==5&&d!==9"],"s":null,"sols":["5967"]},{"n":"ბოლო სამის ჯამი","uses":["„ყველა“","უდიდესი და უმცირესი","ჯამი და სხვაობა"],"c":["კოდში არ არის ციფრები 0 და 7","მეორე ციფრი კოდში ყველაზე პატარაა","პირველისა და მეორის ჯამია 13","ბოლო სამი ციფრის ჯამია 23"],"p":["![a,b,c,d].includes(0)&&![a,b,c,d].includes(7)","b<Math.min(a,c,d)","a+b===13","b+c+d===23"],"s":null,"sols":["8599"]},{"n":"წყვილების ტოლობა","uses":["ორმაგი და ნამრავლი","ჯამი და სხვაობა","„არც… არც…“"],"c":["პირველი ორი ციფრის ჯამი ბოლო ორის ჯამის ტოლია","მესამისა და ბოლოს ნამრავლია 24","პირველისა და მესამის ჯამია 8","პირველი ციფრი არც 5-ია, არც 7, მაგრამ 3-სა და 8-ს შორისაა"],"p":["a+b===c+d","c*d===24","a+c===8","a!==5&&a!==7&&a>3&&a<8"],"s":null,"sols":["4646"]},{"n":"ოთხის ჯამი + პირველი სამის ჯამი","uses":["უდიდესი და უმცირესი","„არც… არც…“"],"c":["ოთხივე ციფრის ჯამია 18","პირველი ციფრი კოდში ყველაზე დიდია","პირველი სამი ციფრის ჯამია 12","მეორე ციფრი არც 4-ია, არც 6, მაგრამ 3-სა და 7-ს შორისაა"],"p":["a+b+c+d===18","a>Math.max(b,c,d)","a+b+c===12","b!==4&&b!==6&&b>3&&b<7"],"s":null,"sols":["7506"]},{"n":"ბოლო სამის ჯამი + წყვილების ტოლობა","uses":["„არც… არც…“","ორმაგი და ნამრავლი"],"c":["ბოლო სამი ციფრის ჯამია 9","მესამე ციფრი არც 3-ია, არც 4, მაგრამ 1-სა და 5-ს შორისაა","პირველი ორი ციფრის ჯამი ბოლო ორის ჯამის ტოლია","პირველისა და მეორის ნამრავლია 0"],"p":["b+c+d===9","c!==3&&c!==4&&c>1&&c<5","a+b===c+d","a*b===0"],"s":null,"sols":["9027"]}]},{"title":"ამბავი","new":"წაიკითხე და გაიგე","explain":"ჯერ ყურადღებით წაიკითხე ამბავი, მერე კი კითხვებს უპასუხე. ფრთხილად: ამბავში შეიძლება ზედმეტი რიცხვებიც ერიოს!","example":"„3 ვაშლი იყიდა, მერე კიდევ 4“ → სულ 7","levels":[{"n":"დაითვალე","c":["პირველი ციფრი: რამდენი ვაშლი იყიდა ნიკამ დილით?","მეორე ციფრი: სულ რამდენი ვაშლი იყიდა?","მესამე ციფრი: რამდენი ვაშლი აჩუქა დას?","მეოთხე ციფრი: რამდენი ვაშლი დარჩა ნიკას?"],"p":["((a===3))","((b===7))","((c===2))","((d===5))"],"s":"ნიკამ დილით 3 ვაშლი იყიდა. საღამოს კიდევ 4 ვაშლი იყიდა. 2 ვაშლი დას აჩუქა.","sols":["3725"],"uses":[]},{"n":"თანაბრად გაყოფა","c":["პირველი ციფრი: რომელ საათზე გაიღვიძა მარიამმა?","მეორე ციფრი: რამდენი გაკვეთილი ჰქონდა?","მესამე ციფრი: რამდენი კანფეტი მიიღო თითო მეგობარმა?","მეოთხე ციფრი: სულ რამდენი ფეხი აქვს კატებს?"],"p":["((a===7))","((b===3))","((c===3))","((d===8))"],"s":"მარიამმა დილის 7 საათზე გაიღვიძა. სკოლაში 3 გაკვეთილი ჰქონდა. დასვენებაზე 6 კანფეტი ორ მეგობარს თანაბრად გაუნაწილა. სახლში 2 კატა დახვდა.","sols":["7338"],"uses":[]},{"n":"ზედმეტი რიცხვი","c":["პირველი ციფრი: რამდენი ძაღლი ჰყავს ლუკას?","მეორე ციფრი: კიდევ რამდენი წიგნი დარჩა წასაკითხი?","მესამე ციფრი: სულ რამდენი ცხოველი ჰყავს ლუკას?","მეოთხე ციფრი: სულ რამდენი ფეხი აქვს ლუკას ძაღლებს?"],"p":["((a===2))","((b===1))","((c===3))","((d===8))"],"s":"ლუკა 9 წლისაა. მას ჰყავს 2 ძაღლი და 1 თუთიყუში. ბებიამ ლუკას 5 წიგნი აჩუქა. ლუკამ 4 წიგნი უკვე წაიკითხა.","sols":["2138"],"uses":[]},{"n":"ავიდა და ჩავიდა","c":["პირველი ციფრი: რამდენი ბავშვი იჯდა ავტობუსში თავიდან?","მეორე ციფრი: რამდენი დარჩა პირველი გაჩერების შემდეგ?","მესამე ციფრი: რამდენი იყო მეორე გაჩერების შემდეგ?","მეოთხე ციფრი: რამდენი დარჩა ბოლო გაჩერების შემდეგ?"],"p":["((a===6))","((b===4))","((c===7))","((d===0))"],"s":"ავტობუსში 6 ბავშვი იჯდა. პირველ გაჩერებაზე 2 ბავშვი ჩავიდა. მეორე გაჩერებაზე 3 ბავშვი ამოვიდა. ბოლო გაჩერებაზე ყველა ჩავიდა.","sols":["6470"],"uses":[]},{"n":"„დანარჩენი“","c":["პირველი ციფრი: რამდენი ლურჯი ბუშტი იყიდა ანამ?","მეორე ციფრი: რამდენი წითელი ბუშტი დარჩა?","მესამე ციფრი: რამდენი ბუშტი გასკდა?","მეოთხე ციფრი: სულ რამდენი ბუშტი დარჩა?"],"p":["((a===5))","((b===3))","((c===1))","((d===8))"],"s":"ანამ 9 ბუშტი იყიდა: 4 წითელი, დანარჩენი კი ლურჯი. ერთი წითელი ბუშტი გასკდა.","sols":["5318"],"uses":[]},{"n":"„რამდენით მეტი“","c":["პირველი ციფრი: რამდენი სპილო ნახეს ბავშვებმა?","მეორე ციფრი: რამდენი ბანანი შეხვდა თითო მაიმუნს?","მესამე ციფრი: სულ რამდენი ცხოველი ნახეს?","მეოთხე ციფრი: რამდენით მეტი ჟირაფი იყო, ვიდრე სპილო?"],"p":["((a===2))","((b===2))","((c===9))","((d===1))"],"s":"ზოოპარკში ბავშვებმა 3 ჟირაფი, 2 სპილო და 4 მაიმუნი ნახეს. მაიმუნებს 8 ბანანი მისცეს და მათ ბანანები თანაბრად გაინაწილეს.","sols":["2291"],"uses":[]},{"n":"ფერები და რაოდენობა","c":["პირველი ციფრი: რამდენი მწვანე ფანქარი აქვს თამარს?","მეორე ციფრი: რამდენი წითელი ფანქარი დარჩა?","მესამე ციფრი: სულ რამდენი ფანქარი აქვს ახლა?","მეოთხე ციფრი: რამდენი სხვადასხვა ფერის ფანქარი აქვს?"],"p":["((a===3))","((b===3))","((c===7))","((d===3))"],"s":"თამარს ჰქონდა 5 წითელი და 3 მწვანე ფანქარი. 2 წითელი ფანქარი გატყდა და თამარმა გადააგდო. ძმამ კი 1 ლურჯი ფანქარი აჩუქა.","sols":["3373"],"uses":[]}]},{"title":"თუ… მაშინ…","new":"თუ… თუ არა და…","explain":"„თუ“ პირობას ნიშნავს. ჯერ შეამოწმე, მართალია თუ არა ის, რაც „თუ“-ს შემდეგ წერია. თუ მართალია, აიღე პირველი პასუხი. თუ არა, აიღე მეორე.","example":"„თუ პირველი ლუწია, მეორე 1-ია, თუ არა და 9“. პირველი 4 → მეორე 1","levels":[{"n":"ახალი: თუ… მაშინ…","uses":["დიდი ჯამები","„არც… არც…“","მეტი და ნაკლები"],"c":["ბოლო სამი ციფრის ჯამია 8","ბოლო ციფრი არც 0-ია, არც 6","მეორე ციფრი 4-ზე მეტია","თუ მესამე ციფრი 6-ზე მეტია, პირველი ციფრი არის 0, თუ არა და 3"],"p":["b+c+d===8","d!==0&&d!==6","b>4","a===(c>6?0:3)"],"s":null,"sols":["3503","3512","3521","3602","3611","3701"]},{"n":"თუ… მაშინ…","uses":["დიდი ჯამები","„გარდა“","„არ არის“"],"c":["ბოლო სამი ციფრის ჯამია 20","ყველა ციფრი 3-ზე მეტია, გარდა მესამისა","თუ მეორე ციფრი კენტია, პირველი ციფრი არის 8, თუ არა და 0","ბოლო ციფრი პირველის ტოლი არ არის"],"p":["b+c+d===20","a>3&&b>3&&d>3&&!(c>3)","a===(odd(b)?8:0)","d!==a"],"s":null,"sols":["8929"]},{"n":"თუ… მაშინ…","uses":["დიდი ჯამები","„არც… არც…“","„ყველა“"],"c":["პირველი სამი ციფრის ჯამია 17","პირველი ციფრი არც 4-ია, არც 6, მაგრამ 2-სა და 7-ს შორისაა","ყველა ციფრი 8-ზე ნაკლებია","თუ ბოლო ციფრი 6-ზე მეტია, პირველი ციფრი არის 3, თუ არა და 4"],"p":["a+b+c===17","a!==4&&a!==6&&a>2&&a<7","Math.max(a,b,c,d)<8","a===(d>6?3:4)"],"s":null,"sols":["3777"]},{"n":"თუ… მაშინ…","uses":["„არც… არც…“","დიდი ჯამები"],"c":["პირველი ციფრი არც 2-ია, არც 5, მაგრამ 1-სა და 6-ს შორისაა","თუ მესამე ციფრი 6-ზე მეტია, მეორე ციფრი არის 6, თუ არა და 7","თუ მესამე ციფრი 6-ზე მეტია, ბოლო ციფრი არის 3, თუ არა და 2","პირველი სამი ციფრის ჯამია 19"],"p":["a!==2&&a!==5&&a>1&&a<6","b===(c>6?6:7)","d===(c>6?3:2)","a+b+c===19"],"s":null,"sols":["4693"]},{"n":"თუ… მაშინ…","uses":["დიდი ჯამები","მომდევნო და წინა"],"c":["პირველი სამი ციფრის ჯამია 17","მეორე ციფრი მესამეზე 2-ით ნაკლებია","თუ პირველი ციფრი 4-ზე მეტია, ბოლო ციფრი არის 0, თუ არა და 2","თუ ბოლო ციფრი 4-ზე მეტია, მეორე ციფრი არის 5, თუ არა და 6"],"p":["a+b+c===17","b===c-2","d===(a>4?0:2)","b===(d>4?5:6)"],"s":null,"sols":["3682"]},{"n":"თუ… მაშინ…","uses":["დიდი ჯამები","„არც… არც…“"],"c":["პირველი სამი ციფრის ჯამია 18","თუ ბოლო ციფრი 3-ზე მეტია, მეორე ციფრი არის 3, თუ არა და 7","ბოლო ციფრი არც 4-ია, არც 5, მაგრამ 2-სა და 7-ს შორისაა","თუ პირველი ციფრი 4-ზე მეტია, მესამე ციფრი არის 2, თუ არა და 3"],"p":["a+b+c===18","b===(d>3?3:7)","d!==4&&d!==5&&d>2&&d<7","c===(a>4?2:3)"],"s":null,"sols":["9723"]}]},{"title":"ციფრების ფორმა","new":"თავდაყირა ციფრი","explain":"თუ ციფრს თავდაყირა დააყენებ, 6 იქცევა 9-ად, 9 კი 6-ად. 0, 1 და 8 იგივე რჩება. 8 ორი წრისგან შედგება, 0 მთლიანად მრგვალია, 1 კი ჯოხს ჰგავს.","example":"6 თავდაყირა → 9","levels":[{"n":"ახალი: თავდაყირა ციფრი","uses":["თუ… მაშინ…","„არც… არც…“","ორმაგი და ნამრავლი"],"c":["თუ მესამე ციფრი 6-ზე მეტია, მეორე ციფრი არის 6, თუ არა და 8","პირველი ციფრი მეორე ციფრია, ოღონდ თავდაყირა","მესამე ციფრი არც 3-ია, არც 8","ბოლო ციფრი პირველის ნახევარია"],"p":["b===(c>6?6:8)","a===(UP[b]??-1)","c!==3&&c!==8","2*d===a"],"s":null,"sols":["8804","8814","8824","8844","8854","8864"]},{"n":"თავდაყირა რომ დააყენო","uses":["ორმაგი და ნამრავლი","თუ… მაშინ…","„არც… არც…“"],"c":["მესამისა და ბოლოს ნამრავლია 36","თუ მესამე ციფრი 6-ზე მეტია, პირველი ციფრი არის 9, თუ არა და 0","პირველი ციფრი არც 0-ია, არც 4","მეორე ციფრი თავდაყირა რომ დააყენო, 6 გამოვა"],"p":["c*d===36","a===(c>6?9:0)","a!==0&&a!==4","(UP[b]??-1)===6"],"s":null,"sols":["9994"]},{"n":"ციფრის ფორმა","uses":["თუ… მაშინ…","„არ არის“","ჯამი და სხვაობა"],"c":["თუ ბოლო ციფრი 5-ზე მეტია, მეორე ციფრი არის 1, თუ არა და 5","ბოლო ციფრი მთლიანად მრგვალია","მესამე ციფრი 8-ზე ნაკლებია და არ არის 7","პირველისა და მესამის ჯამია 15"],"p":["b===(d>5?1:5)","d===0","c<8&&c!==7","a+c===15"],"s":null,"sols":["9560"]},{"n":"თავდაყირაც იგივე","uses":["მეტი და ნაკლები","მომდევნო და წინა","თუ… მაშინ…"],"c":["მესამე ციფრი თავდაყირაც იგივე რჩება","მესამე ციფრი მეორესა და ბოლოს შორისაა","ბოლო ციფრი პირველზე 3-ით ნაკლებია","თუ მესამე ციფრი 5-ზე მეტია, მეორე ციფრი არის 2, თუ არა და 3"],"p":["(UP[c]??-1)===c","(c>Math.min(b,d)&&c<Math.max(b,d))","d===a-3","b===(c>5?2:3)"],"s":null,"sols":["3310"]},{"n":"ციფრის ფორმა + თავდაყირა ციფრი","uses":["მეტი და ნაკლები","თუ… მაშინ…"],"c":["მესამე ციფრი მთლიანად მრგვალია","მეორე ციფრი პირველი ციფრია, ოღონდ თავდაყირა","ბოლო ციფრი 7-სა და 9-ს შორისაა","თუ პირველი ციფრი ლუწია, მეორე ციფრი არის 2, თუ არა და 6"],"p":["c===0","b===(UP[a]??-1)","(d>7&&d<9)","b===(ev(a)?2:6)"],"s":null,"sols":["9608"]},{"n":"თავდაყირა რომ დააყენო + თავდაყირაც იგივე","uses":["ადგილის სიტყვები","თუ… მაშინ…"],"c":["მეორე ციფრის გვერდით დგას ციფრები 7 და 8","ბოლო ციფრი თავდაყირა რომ დააყენო, 6 გამოვა","თუ მესამე ციფრი ლუწია, მეორე ციფრი არის 8, თუ არა და 5","მეორე ციფრი თავდაყირაც იგივე რჩება"],"p":["pairEq([a,c],[7,8])","(UP[d]??-1)===6","b===(ev(c)?8:5)","(UP[b]??-1)===b"],"s":null,"sols":["7889"]}]}];</script>
+<script>
+// themed doors kept for later; for now every topic uses the same door
+const ALT_THEMES=[
+ {name:"ჩემი სახლი",wall:"#ffe8d6",door:"#e63946",door2:"#b52a35",frame:"#fffdf5",shape:"rect",tex:"panels",prize:"🧸"},
+ {name:"ტყის ქოხი",wall:"#d8f3dc",door:"#9c6644",door2:"#6b4226",frame:"#5c3b1e",shape:"arch",tex:"planks",prize:"🍄"},
+ {name:"მრგვალი კარი ბორცვში",wall:"#b7e4c7",door:"#2d6a4f",door2:"#1b4332",frame:"#a1887f",shape:"round",tex:"planks",prize:"🥧"},
+ {name:"ციხე-სიმაგრე",wall:"#cfd8dc",door:"#795548",door2:"#4e342e",frame:"#90a4ae",shape:"arch",tex:"bands",prize:"👑"},
+ {name:"კოსმოსური ხომალდი",wall:"#25226b",door:"#cfd8dc",door2:"#78909c",frame:"#546e7a",shape:"round",tex:"metal",prize:"⭐",dark:true},
+ {name:"წყალქვეშა ნავი",wall:"#48cae4",door:"#ffd166",door2:"#d39b00",frame:"#f4a261",shape:"round",tex:"metal",prize:"🐠"},
+ {name:"ყინულის სასახლე",wall:"#e0fbfc",door:"#a9e5f2",door2:"#48cae4",frame:"#ffffff",shape:"arch",tex:"ice",prize:"⛄"},
+ {name:"ტკბილეულის მაღაზია",wall:"#fff0f6",door:"#ff8fab",door2:"#ffe0ea",frame:"#fb6f92",shape:"rect",tex:"stripes",prize:"🍭"},
+ {name:"მეკობრის სკივრი",wall:"#f6e7c1",door:"#a0522d",door2:"#7b3f1d",frame:"#e0a800",shape:"rect",tex:"bands",prize:"💰",openX:true},
+ {name:"ზოოპარკის ჭიშკარი",wall:"#fefae0",door:"#e9edc9",door2:"#3a5a40",frame:"#588157",shape:"rect",tex:"bars",prize:"🦁"},
+ {name:"სახლი ხეზე",wall:"#caf0f8",door:"#bc6c25",door2:"#8a4f1b",frame:"#606c38",shape:"arch",tex:"planks",prize:"🐿️"},
+ {name:"ჯადოქრის კოშკი",wall:"#3c096c",door:"#7b2cbf",door2:"#5a189a",frame:"#c77dff",shape:"arch",tex:"stars",prize:"🔮",dark:true},
+ {name:"მატარებლის ვაგონი",wall:"#e9edc9",door:"#d62828",door2:"#a4161a",frame:"#003049",shape:"rect",tex:"metal",prize:"🚂"},
+ {name:"რობოტების ქარხანა",wall:"#e5e5e5",door:"#adb5bd",door2:"#6c757d",frame:"#ffb703",shape:"rect",tex:"metal",prize:"🤖"},
+ {name:"დრაკონის გამოქვაბული",wall:"#4a3530",door:"#9d0208",door2:"#6a040f",frame:"#7f5539",shape:"arch",tex:"hplanks",prize:"🐉",dark:true},
+ {name:"ფერმის ბეღელი",wall:"#d9ed92",door:"#c1121f",door2:"#8d0801",frame:"#fdf0d5",shape:"rect",tex:"barn",prize:"🐮"},
+ {name:"ზღაპრების ბიბლიოთეკა",wall:"#f1e3d3",door:"#6f4518",door2:"#4a2e12",frame:"#a68a64",shape:"arch",tex:"panels",prize:"📚"},
+ {name:"ცირკის კარავი",wall:"#fdf0d5",door:"#e63946",door2:"#fffdf5",frame:"#ffb703",shape:"arch",tex:"stripes",prize:"🎪"},
+ {name:"ოქროს სასახლე",wall:"#fff3b0",door:"#ffd60a",door2:"#e0b000",frame:"#7209b7",shape:"arch",tex:"stars",prize:"🏆"}
+];
+const DOOR={wall:"#fff4e0",door:"#c0773b",door2:"#8d5524",frame:"#6d4c41",shape:"arch",tex:"planks"};
+const PRIZES=["🧸","🎈","🍭","⭐","🎁","🍪","🪁","🎨","🦄","🐶","🚀","🌈","🍦","🐱","⚽","🎵","📚","🤖","🏆"];
+const THEMES=DATA.map((_,i)=>Object.assign({name:`კარი ${i+1}`,prize:PRIZES[i%PRIZES.length]},DOOR));
+const POS=["პირველი","მეორე","მესამე","მეოთხე"];
+const AUTO_TOPICS=6; // topics 1–6 tick satisfied clues by themselves; later topics leave it to the child
+const isAuto=t=>t<AUTO_TOPICS;
+// a clue is ticked only when it holds whatever digits the empty windows end up with
+function autoTicks(){
+  const ps=preds(view.t,view.l),U=[0,1,2,3].filter(i=>view.code[i]===null);
+  if(U.length===4)return ps.map(()=>false);
+  const total=10**U.length;
+  return ps.map(p=>{for(let n=0;n<total;n++){const q=view.code.slice();let m=n;for(const i of U){q[i]=m%10;m=Math.floor(m/10)}if(!p(...q,odd,ev,UP,pairEq))return false}return true});
+}
+const odd=x=>x%2===1,ev=x=>x%2===0,UP={6:9,9:6,0:0,1:1,8:8};
+const pairEq=(p,q)=>{p=[...p].sort();q=[...q].sort();return p[0]===q[0]&&p[1]===q[1]};
+const FN={};
+function preds(t,l){const k=t+"-"+l;if(!FN[k])FN[k]=DATA[t].levels[l].p.map(p=>new Function("a","b","c","d","odd","ev","UP","pairEq","return "+p));return FN[k]}
+let S={progress:{},test:true};
+try{const s=JSON.parse(localStorage.getItem("codebreaker-v2")||"null");if(s)S=Object.assign(S,s)}catch(e){}
+S.test=true; // test build: every topic and level starts unlocked
+function save(){try{localStorage.setItem("codebreaker-v2",JSON.stringify({progress:S.progress,test:S.test}))}catch(e){}}
+let view={name:"home"};
+const app=document.getElementById("app");
+const key=(t,l)=>t+"-"+l;
+const stars=(t,l)=>S.progress[key(t,l)]||0;
+const topicDone=t=>DATA[t].levels.every((_,l)=>stars(t,l)>0);
+const topicOpen=t=>S.test||t===0||topicDone(t-1);
+const levelOpen=(t,l)=>topicOpen(t)&&(S.test||l===0||stars(t,l-1)>0);
+const totalStars=()=>Object.values(S.progress).reduce((a,b)=>a+b,0);
+const LEVELS=DATA.reduce((a,t)=>a+t.levels.length,0);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const starStr=n=>"★".repeat(n)+"☆".repeat(3-n);
+const themeVars=th=>`--wall:${th.wall};--door:${th.door};--door2:${th.door2};--frame:${th.frame}`;
+
+// colour position words so the clue links to the matching lock window
+function markup(t){
+  t=esc(t);
+  return t.replace(/(ბოლოსწინა|ბოლოდან მეორე|ბოლო[ა-ჰ]*|პირველ[ა-ჰ]*|მეორ[ა-ჰ]*|მესამ[ა-ჰ]*|მეოთხ[ა-ჰ]*)(?![ა-ჰ])(?! (?:ორ|სამ)[ა-ჰ]*)/g,m=>{
+    const p=/^ბოლოსწინა|^ბოლოდან/.test(m)?3:/^ბოლო/.test(m)?4:/^პირველ/.test(m)?1:/^მეორ/.test(m)?2:/^მესამ/.test(m)?3:4;
+    return `<span class="pw pw${p}">${m}</span>`;});
+}
+
+function header(){
+  return `<header class="top"><div><h1>კოდის გამტეხი</h1>
+  <p class="sub">${DATA.length} კარი · ${LEVELS} საკეტი · წაიკითხე პირობები და გააღე კარი</p></div>
+  <div class="tools"><span class="starsTotal" title="შეგროვებული ვარსკვლავები">★ ${totalStars()}/${LEVELS*3}</span>
+  <label class="toggle"><input type="checkbox" id="test" ${S.test?"checked":""}> ყველა დონე გახსნილია</label>
+  <button class="btn ghost" id="reset">${view.confirmReset?"ნამდვილად წავშალო?":"პროგრესის წაშლა"}</button></div></header>`;
+}
+function bindHeader(){
+  document.getElementById("test").onchange=e=>{S.test=e.target.checked;save();render()};
+  document.getElementById("reset").onclick=()=>{if(view.confirmReset){S.progress={};save();view.confirmReset=false}else view.confirmReset=true;render()};
+}
+const mini=th=>`<span class="mini shape-${th.shape} tex-${th.tex}" style="${themeVars(th)}" aria-hidden="true"><i></i></span>`;
+
+function home(){
+  app.innerHTML=header()+`<main class="street">${DATA.map((t,i)=>{
+    const th=THEMES[i],open=topicOpen(i);
+    return `<button class="chunk house ${open?"":"locked"} ${th.dark?"dark":""}" style="${themeVars(th)}" data-t="${i}" ${open?"":"aria-disabled=true"}>
+      ${mini(th)}<span class="num">${i+1}</span><h3>${esc(t.title)}</h3>
+      <span class="dots">${t.levels.map((_,l)=>`<i class="s${stars(i,l)}"></i>`).join("")}</span></button>`}).join("")}</main>`;
+  bindHeader();
+  app.querySelectorAll(".house").forEach(b=>b.onclick=()=>{const t=+b.dataset.t;if(topicOpen(t))go({name:"topic",t})});
+}
+
+function topic(){
+  const t=DATA[view.t],th=THEMES[view.t];
+  app.innerHTML=header()+`<div class="bar"><button class="btn" id="back">← ყველა კარი</button></div>
+  <section class="chunk intro"><span class="tag">კარი ${view.t+1}</span><h2>${esc(t.title)}</h2>
+  <p>${esc(t.explain)}</p><div class="example">მაგალითი: ${esc(t.example)}</div></section>
+  <div class="lvgrid">${t.levels.map((L,l)=>{const o=levelOpen(view.t,l),s=stars(view.t,l);
+    return `<button class="chunk lv ${o?"":"locked"}" data-l="${l}"><span class="row1"><b>${l+1}</b><span class="st">${o?(s?starStr(s):""):"🔒"}</span></span>
+      <span class="note">${esc(L.n)}</span>${L.uses.length?`<span class="uses">+ ${esc(L.uses.join(", "))}</span>`:""}${L.sols.length>1?`<span class="many">${L.sols.length} სწორი კოდი</span>`:""}</button>`}).join("")}</div>`;
+  bindHeader();
+  document.getElementById("back").onclick=()=>go({name:"home"});
+  app.querySelectorAll(".lv").forEach(b=>b.onclick=()=>{const l=+b.dataset.l;if(levelOpen(view.t,l))startLevel(view.t,l)});
+}
+
+function startLevel(t,l){go({name:"play",t,l,code:[null,null,null,null],sel:0,tries:0,hints:0,locked:[false,false,false,false],fails:[],checked:[],won:false,msg:""})}
+
+function play(){
+  const T=DATA[view.t],L=T.levels[view.l],th=THEMES[view.t],auto=isAuto(view.t);
+  if(auto)view.checked=autoTicks();
+  app.innerHTML=`<div class="bar"><button class="btn" id="back">← ${esc(T.title)}</button>
+   <div class="where">საკეტი ${view.l+1} / ${T.levels.length}<small>კარი ${view.t+1}: ${esc(T.title)}</small></div>
+   <span class="notechip">${esc(L.n)}</span>${L.uses.length?`<span class="useschip">+ ნასწავლი: ${esc(L.uses.join(", "))}</span>`:""}<span class="sp"></span><span class="starsTotal">★ ${totalStars()}</span></div>
+  <div class="play">
+   <section class="clues" aria-label="პირობები">
+     <details class="recall"><summary>💡 გაიხსენე: ${esc(T.new)}</summary><p>${esc(T.explain)}</p></details>
+     ${L.s?`<div class="chunk story"><b>ამბავი</b>${esc(L.s)}</div>`:""}
+     ${L.c.map((c,i)=>{const f=view.fails.includes(i);return `<button class="clue ${view.checked[i]&&!f?"done":""} ${f?"fail":""} ${auto?"auto":""}" data-i="${i}" ${auto?'aria-disabled="true"':`aria-pressed="${!!view.checked[i]}"`}>${f?'<span class="failtag">არ სრულდება</span>':""}<span class="box">${view.checked[i]&&!f?"✓":""}</span><span class="tx">${markup(c)}</span></button>`}).join("")}
+     <p class="tip">${L.sols.length>1?"ამ კარს რამდენიმე კოდი აღებს, იპოვე ერთი მაინც! ":""}${auto?"შესრულებული პირობა თავისით მოინიშნება ✓":"დააჭირე პირობას, როცა გამოიყენებ, და ის მოინიშნება ✓"}</p>
+   </section>
+   <section>
+     <div class="scene shape-${th.shape} tex-${th.tex} ${th.openX?"open-x":""} ${view.won?"open":""}" id="scene" style="${themeVars(th)}">
+       <span class="sign">${esc(th.name)}</span>
+       <div class="frame">
+         <div class="doorway">${view.won?winHTML(th):""}</div>
+         <div class="leaf"><span class="knob" aria-hidden="true"></span>
+           <div class="plate" role="group" aria-label="საკეტი">${[0,1,2,3].map(i=>`<div class="slot ${view.sel===i?"sel":""}">
+             <button class="arr" data-up="${i}" aria-label="${POS[i]} ციფრი, ერთით მეტი">▲</button>
+             <div class="win ${view.code[i]===null?"empty":""} ${view.locked[i]?"lockd":""}" data-w="${i}" tabindex="0" role="button" aria-label="${POS[i]} ციფრი">${view.code[i]===null?"?":view.code[i]}</div>
+             <button class="arr" data-dn="${i}" aria-label="${POS[i]} ციფრი, ერთით ნაკლები">▼</button></div>`).join("")}</div>
+         </div>
+       </div>
+     </div>
+     <div class="panel">${view.won?"":`
+       <div class="msg" role="status">${esc(view.msg||"")}</div>
+       <div class="acts"><button class="btn go open" id="open">🔑 გააღე</button><button class="btn" id="hint">მინიშნება</button></div>
+       <div class="meta"><span>ცდები: ${view.tries}</span><span>${view.hints?`მინიშნება: ${view.hints}`:"ციფრების ჩაწერა კლავიატურითაც შეიძლება"}</span></div>`}</div>
+   </section>
+  </div>`;
+  document.getElementById("back").onclick=()=>go({name:"topic",t:view.t});
+  if(!auto)app.querySelectorAll(".clue").forEach(b=>b.onclick=()=>{const i=+b.dataset.i;view.checked[i]=!view.checked[i];play()});
+  app.querySelectorAll("[data-w]").forEach(w=>w.onclick=()=>{view.sel=+w.dataset.w;play()});
+  app.querySelectorAll("[data-up]").forEach(b=>b.onclick=()=>spin(+b.dataset.up,1));
+  app.querySelectorAll("[data-dn]").forEach(b=>b.onclick=()=>spin(+b.dataset.dn,-1));
+  if(view.won){const nx=document.getElementById("next");if(nx)nx.onclick=nextLevel;const th2=document.getElementById("toHome");if(th2)th2.onclick=()=>go({name:"home"});document.getElementById("again").onclick=()=>startLevel(view.t,view.l)}
+  else{document.getElementById("open").onclick=check;document.getElementById("hint").onclick=hint}
+}
+function winHTML(th){
+  const L=DATA[view.t].levels[view.l],mine=view.code.join(""),others=L.sols.filter(s=>s!==mine);
+  const nmax=th.shape==="round"?4:6;
+  const nx=nextRef(),nth=nx?THEMES[nx.t]:null;
+  return `<span class="prize" aria-hidden="true">${th.prize}</span>
+  <div class="wstars" aria-label="${view.earned} ვარსკვლავი">${starStr(view.earned)}</div>
+  <h3>კარი გაიღო!</h3><div class="code">${mine}</div>
+  ${others.length?`<div class="others">კიდევ ${others.length} კოდი აღებს:</div><div class="chips">${others.slice(0,nmax).map(s=>`<span>${s}</span>`).join("")}${others.length>nmax?`<span>+${others.length-nmax}</span>`:""}</div>`:`<div class="others">სხვა კოდი ამ კარს ვერ აღებს</div>`}
+  ${nx?`<button class="nextdoor" id="next">${mini(nth)}შემდეგი კარი →</button>`:`<button class="nextdoor" id="toHome">ყველა კარი გაიღო! 🏆</button>`}
+  <button class="again" id="again">თავიდან ვცდი</button>`;
+}
+function nextRef(){if(view.l+1<DATA[view.t].levels.length)return{t:view.t,l:view.l+1};if(view.t+1<DATA.length)return{t:view.t+1,l:0};return null}
+function nextLevel(){const n=nextRef();if(!n)return go({name:"home"});if(n.t!==view.t)go({name:"topic",t:n.t});else startLevel(n.t,n.l)}
+function spin(i,dir){if(view.won||view.locked[i])return;const v=view.code[i];view.code[i]=v===null?(dir>0?0:9):(v+dir+10)%10;view.sel=i;view.fails=[];view.msg="";play()}
+function typeD(d){
+  if(view.won)return;
+  if(d==="x"){let i=view.sel;if(view.code[i]===null&&i>0)i--;if(!view.locked[i]){view.code[i]=null;view.sel=i}}
+  else{const i=view.sel;if(!view.locked[i])view.code[i]=+d;let j=i;do{j++}while(j<4&&view.locked[j]);view.sel=j<4?j:i}
+  view.fails=[];view.msg="";play();
+}
+function check(){
+  if(view.won)return;
+  if(view.code.some(x=>x===null)){view.msg="ჯერ ოთხივე ციფრი ჩაწერე";play();return}
+  const f=preds(view.t,view.l).map((p,i)=>p(...view.code,odd,ev,UP,pairEq)?-1:i).filter(i=>i>=0);
+  if(!f.length){
+    view.earned=Math.max(1,3-(view.tries>=1?1:0)-(view.tries>=3?1:0)-view.hints);
+    view.won=true;const k=key(view.t,view.l);S.progress[k]=Math.max(S.progress[k]||0,view.earned);save();play();
+    requestAnimationFrame(()=>{const n=document.getElementById("next")||document.getElementById("again");n&&n.focus()});return;
+  }
+  view.tries++;view.fails=f;
+  view.msg=f.length===1?"ერთი პირობა არ სრულდება, ის წითლადაა მონიშნული":`${f.length} პირობა არ სრულდება, ისინი წითლადაა მონიშნული`;
+  play();const s=document.getElementById("scene");s.classList.remove("shake");void s.offsetWidth;s.classList.add("shake");
+}
+function hint(){
+  if(view.won)return;
+  const L=DATA[view.t].levels[view.l];
+  const fits=s=>view.locked.every((lk,i)=>!lk||+s[i]===view.code[i]);
+  const score=s=>s.split("").reduce((a,ch,i)=>a+(view.code[i]===+ch?1:0),0);
+  const best=L.sols.filter(fits).sort((x,y)=>score(y)-score(x))[0];
+  if(!best){view.msg="მინიშნება აქ ვერ დაგეხმარება";play();return}
+  const i=[0,1,2,3].find(i=>!view.locked[i]&&view.code[i]!==+best[i]);
+  if(i===undefined){view.msg="ეს კოდი უკვე სწორია, დააჭირე „გააღე“-ს";play();return}
+  view.code[i]=+best[i];view.locked[i]=true;view.hints++;view.fails=[];
+  view.msg=`მინიშნება: ${POS[i]} ციფრი შეიძლება იყოს ${best[i]}`;
+  let j=0;while(j<4&&(view.locked[j]||view.code[j]!==null))j++;view.sel=j<4?j:view.sel;play();
+}
+document.addEventListener("keydown",e=>{
+  if(view.name!=="play"||view.won)return;
+  if(/^[0-9]$/.test(e.key)){typeD(e.key);e.preventDefault()}
+  else if(e.key==="Backspace"){typeD("x");e.preventDefault()}
+  else if(e.key==="Enter"&&e.target.tagName!=="BUTTON"){check();e.preventDefault()}
+  else if(e.key==="ArrowLeft"){view.sel=Math.max(0,view.sel-1);play()}
+  else if(e.key==="ArrowRight"){view.sel=Math.min(3,view.sel+1);play()}
+  else if(e.key==="ArrowUp"){spin(view.sel,1);e.preventDefault()}
+  else if(e.key==="ArrowDown"){spin(view.sel,-1);e.preventDefault()}
+});
+function go(v){view=v;render();window.scrollTo(0,0)}
+function render(){view.name==="home"?home():view.name==="topic"?topic():play()}
+function start(d){if(d&&d.view&&d.view.name!=="play")view=d.view;render()}
+window.claude?.hot?.snapshot?.(()=>({view}));
+window.claude?.hot?.ready?window.claude.hot.ready(start):start(window.claude?.hot?.data??{});
+</script>
+</body>
+</html>
